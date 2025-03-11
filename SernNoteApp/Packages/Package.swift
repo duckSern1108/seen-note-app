@@ -14,21 +14,23 @@ let package = Package(
             name: "Domain",
             targets: ["Domain"]),
         .library(
-            name: "NoteUseCase",
-            targets: ["NoteUseCase"]),
+            name: "BaseNetwork",
+            targets: ["BaseNetwork"]),
         .library(
             name: "CoreDataRepository",
-            targets: ["CoreDataRepository"])
+            targets: ["CoreDataRepository"]),
+        .library(
+            name: "NoteRepository",
+            targets: ["NoteRepository"]),
+        .library(
+            name: "NoteUseCase",
+            targets: ["NoteUseCase"])
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(name: "Domain"),
-        .target(
-            name: "APIRouter",
-            dependencies: [
-                .target(name: "Domain")
-            ]),
+        .target(name: "BaseNetwork"),
         .target(
             name: "CoreDataRepository",
             dependencies: [
@@ -38,11 +40,17 @@ let package = Package(
                 .process("Resources")
             ]),
         .target(
+            name: "NoteRepository",
+            dependencies: [
+                .target(name: "BaseNetwork"),
+                .target(name: "Domain"),
+            ]),
+        .target(
             name: "NoteUseCase",
             dependencies: [
                 .target(name: "Domain"),
                 .target(name: "CoreDataRepository"),
-                .target(name: "APIRouter")
-            ]),
+                .target(name: "NoteRepository")
+            ])
     ]
 )

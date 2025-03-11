@@ -82,15 +82,19 @@ final class NoteListVC: UIViewController {
             .store(in: &cancellations)
         
         output.loadPubliser
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .sink(receiveValue: { _ in })
             .store(in: &cancellations)
         
         output.addNotePublisher
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .sink(receiveValue: { _ in })
             .store(in: &cancellations)
         
         output.editNotePublisher
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .sink(receiveValue: { _ in })
+            .store(in: &cancellations)
+        
+        output.deleteNotePublisher
+            .sink(receiveValue: { _ in })
             .store(in: &cancellations)
         
         syncListNotePublisher.send(())

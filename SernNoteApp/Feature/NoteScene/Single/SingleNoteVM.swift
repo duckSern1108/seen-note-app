@@ -59,10 +59,6 @@ class SingleNoteVM: BaseViewModel {
             .map { _ in }
             .eraseToAnyPublisher()
         
-        let isEditPublisher: AnyPublisher<Bool, Never> = $note
-            .map { $0.title.isEmpty && $0.content.isEmpty }
-            .eraseToAnyPublisher()
-        
         return Output(
             notePublisher: $note.eraseToAnyPublisher(),
             backPublisher: backPublisher)

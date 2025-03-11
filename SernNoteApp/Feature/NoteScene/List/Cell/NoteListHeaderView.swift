@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import SnapKit
+
 
 final class NoteListHeaderView: UITableViewHeaderFooterView {
     // label's height = 24, vertical padding = 8
@@ -25,14 +27,10 @@ final class NoteListHeaderView: UITableViewHeaderFooterView {
     private func setup() {
         contentView.addSubview(label)
         label.font = .systemFont(ofSize: 17, weight: .bold)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            label.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
-        ])
+        label.snp.makeConstraints { make in
+            make.verticalEdges.equalToSuperview().inset(8)
+            make.horizontalEdges.equalToSuperview()
+        }
     }
     
     func bind(_ data: Date) {

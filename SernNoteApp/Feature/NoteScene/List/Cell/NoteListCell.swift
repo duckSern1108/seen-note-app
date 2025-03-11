@@ -35,7 +35,7 @@ final class NoteListCell: UITableViewCell {
     }
     
     func bindNote(_ data: NoteModel) {
-        titleLabel.text = data.title
+        titleLabel.text = data.title.isEmpty ? "Title empty" : data.title
         contentLabel.text = data.content.isEmpty ? "Content empty" : data.content
         contentLabel.textColor = data.content.isEmpty ? .systemGray : .black
         timeLabel.text = "\(data.created.hour24):\(data.created.minute0x)"

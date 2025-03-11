@@ -7,7 +7,7 @@
 
 import UIKit
 import Combine
-import CoreData
+@preconcurrency import CoreData
 import Domain
 
 
@@ -21,37 +21,30 @@ public protocol CoreDataNoteRepository {
 
 public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked Sendable {
     public static let shared = CoreDataNoteRepositoryDefault()
-    
-    var context: NSManagedObjectContext!
-    var fetchController: NSFetchedResultsController<CoreDataNote>!
-    private var persistentContainer: NSPersistentContainer!
+        
+    private let persistentContainer: NSPersistentContainer
     
     private init() {
         let bundle = Bundle.module
         let modelURL = bundle.url(forResource: "SernNoteApp", withExtension: ".momd")!
         let model = NSManagedObjectModel(contentsOf: modelURL)!
         let container = NSPersistentContainer(name: "SernNoteApp", managedObjectModel: model)
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         self.persistentContainer = container
-        container.loadPersistentStores(completionHandler: { [weak self] (storeDescription, error) in
+        container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
-            guard let self = self else { return }
-            self.context = persistentContainer.newBackgroundContext()
-            // Create Fetch Request
-            let fetchRequest: NSFetchRequest<CoreDataNote> = CoreDataNote.fetchRequest()
-            // Configure Fetch Request
-            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "created", ascending: true)]
-            self.fetchController = NSFetchedResultsController(
-                fetchRequest: fetchRequest,
-                managedObjectContext: context,
-                sectionNameKeyPath: nil, cacheName: nil)
         })
-        
+    }
+    
+    private var context: NSManagedObjectContext {
+        persistentContainer.newBackgroundContext()
     }
     
     public func addNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        let context: NSManagedObjectContext! = self.context
+        let context = self.context
         return Future<Void, Error>() { promise in
             let entity = NSEntityDescription.entity(forEntityName: "CoreDataNote", in: context)!
             let newNote = CoreDataNote(entity: entity, insertInto: context)
@@ -67,20 +60,19 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
     }
     
     public func updateNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        let context: NSManagedObjectContext! = self.context
+        let context = self.context
         return Future<Void, Error>() { promise in
-            context.perform { [weak self] in
-                guard let self = self else {
-                    promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                    return
-                }
-                guard let object = self.fetchController.fetchedObjects?.first(where: { $0.created == data.created }) else {
-                    promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                    return
-                }
-                object.updateFromNote(data)
+            context.perform {
+                let request = CoreDataNote.fetchRequest()
+                request.predicate = NSPredicate(format: "created = %@", data.created as NSDate)
+                request.returnsObjectsAsFaults = false
                 do {
-                    try self.context.save()
+                    let listObject = try context.fetch(request)
+                    guard let object = listObject.first else {
+                        throw GeneralError.localError(msg: "Not found object")
+                    }
+                    object.updateFromNote(data)
+                    try context.save()
                     promise(.success(()))
                 } catch {
                     promise(.failure(error))
@@ -91,24 +83,24 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
     }
     
     public func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        Future<Void, Error>() { [weak self] promise in
-            guard let self = self else {
-                promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                return
-            }
-            self.context.perform { [weak self] in
-                guard let self = self else {
-                    promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                    return
-                }
-                guard let object = self.fetchController.fetchedObjects?.first(where: { $0.created == data.created }) else {
-                    promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                    return
-                }
-                self.context.delete(object)
+        let context = self.context
+        return Future<Void, Error>() { promise in
+            context.perform {
+                let request = CoreDataNote.fetchRequest()
+                request.predicate = NSPredicate(format: "created = %@", data.created as NSDate)
+                request.returnsObjectsAsFaults = false
                 do {
-                    try self.context.save()
-                    promise(.success(()))
+                    let listObject = try context.fetch(request)
+                    guard let object = listObject.first else {
+                        throw GeneralError.localError(msg: "Not found object")
+                    }
+                    context.delete(object)
+                    do {
+                        try context.save()
+                        promise(.success(()))
+                    } catch {
+                        promise(.failure(error))
+                    }
                 } catch {
                     promise(.failure(error))
                 }
@@ -118,14 +110,11 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
     }
     
     public func fetchNotes() -> AnyPublisher<[NoteModel], Error> {
-        Future<[NoteModel], Error>() { [weak self] promise in
-            guard let self = self else {
-                promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                return
-            }
+        let context = self.context
+        return Future<[NoteModel], Error>() { promise in
             do {
-                try self.fetchController.performFetch()
-                let ret = (self.fetchController.fetchedObjects ?? []).map { $0.noteModel }
+                let coreDataObjects = try context.fetch(CoreDataNote.fetchRequest())
+                let ret = coreDataObjects.map { $0.noteModel }
                 promise(.success(ret))
             } catch {
                 promise(.failure(error))
@@ -135,13 +124,17 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
     }
     
     public func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error> {
-        Future<Void, Error>() { [weak self] promise in
-            guard let self = self else {
-                promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
-                return
-            }
+        let context = self.context
+        return Future<Void, Error>() { promise in
             do {
-                try self.fetchController.performFetch()
+                let batchRequest = NSBatchDeleteRequest(fetchRequest: CoreDataNote.fetchRequest())
+                try context.execute(batchRequest)
+                datas.forEach { data in
+                    let entity = NSEntityDescription.entity(forEntityName: "CoreDataNote", in: context)!
+                    let newNote = CoreDataNote(entity: entity, insertInto: context)
+                    newNote.updateFromNote(data)
+                }
+                try context.save()
                 promise(.success(()))
             } catch {
                 promise(.failure(error))

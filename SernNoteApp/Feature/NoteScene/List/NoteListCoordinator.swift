@@ -24,13 +24,13 @@ class NoteListCoordinatorDefault: NoteListCoordinator {
         let vm = SingleNoteVM(note: note)
         let vc = SingleNoteVC.newVC(viewModel: vm)
         navigationController?.pushViewController(vc, animated: true)
-        return vm.delegate.eraseToAnyPublisher()
+        return vm.delegate
     }
     
     func goToAddNote() -> AnyPublisher<NoteModel, Never> {
         let vm = SingleNoteVM(note: NoteModel())
         let vc = SingleNoteVC.newVC(viewModel: vm)
         navigationController?.pushViewController(vc, animated: true)
-        return vm.delegate.eraseToAnyPublisher()
+        return vm.delegate
     }
 }

@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import Domain
+import BaseNetwork
 
 
 public enum NoteRouter: APIRouter {
@@ -21,6 +22,10 @@ public enum NoteRouter: APIRouter {
     
     public func params() -> [String : Any] {
         [:]
+    }
+    
+    public func domain() -> ServerDomain {
+        .main
     }
     
     case addNote(_ data: NoteModel)

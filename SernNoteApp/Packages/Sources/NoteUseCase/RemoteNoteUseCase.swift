@@ -8,31 +8,31 @@
 import Foundation
 import Combine
 import Domain
-import APIRouter
+import NoteRepository
 
 
 public class RemoteNoteUseCase: NoteUseCase {
     
-    public init() {}
+    private let repository: NoteRepository
+    
+    public init(repository: NoteRepository) {
+        self.repository = repository
+    }
     
     public func addNote(_ data: NoteModel) -> AnyPublisher<NoteModel, Error> {
-        NoteRouter.addNote(data)
-            .publisher()
+        repository.addNote(data)
     }
     
     public func updateNote(_ data: NoteModel) -> AnyPublisher<NoteModel, Error> {
-        NoteRouter.updateNote(data)
-            .publisher()
+        repository.updateNote(data)
     }
     
     public func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        NoteRouter.addNote(data)
-            .publisher()
+        repository.deleteNote(data)
     }
     
     public func getListNote() -> AnyPublisher<[NoteModel], Error> {
-        NoteRouter.getListNote
-            .publisher()
+        repository.getListNote()
     }
 }
 

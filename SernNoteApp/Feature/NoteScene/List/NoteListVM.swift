@@ -24,10 +24,10 @@ final class NoteListVM: BaseViewModel {
     struct Output {
         var listNotePubliser: AnyPublisher<[NoteModel], Never>
         
-        var loadPubliser: AnyPublisher<Void, Error>
-        var editNotePublisher: AnyPublisher<Void, Error>
-        var addNotePublisher: AnyPublisher<Void, Error>
-        var deleteNotePublisher: AnyPublisher<Void, Error>
+        var loadPubliser: AnyPublisher<Void, Never>
+        var editNotePublisher: AnyPublisher<Void, Never>
+        var addNotePublisher: AnyPublisher<Void, Never>
+        var deleteNotePublisher: AnyPublisher<Void, Never>
     }
     
     let coreDataUseCase: CoreDataNoteUseCase
@@ -44,58 +44,67 @@ final class NoteListVM: BaseViewModel {
         
         let localData = coreDataUseCase.notes
         
-        let firstLocalData = localData.first()
-        
-        let getRemoteListData = input.syncListNotePublisher
+        let firstLoadPublisher: AnyPublisher<([NoteModel], [NoteModel]), Never> = input.syncListNotePublisher
             .share()
+            .first()
+            .flatMap { self.coreDataUseCase.fetchNotes() }
+            .replaceError(with: ())
+            .withLatestFrom(localData, resultSelector: { $1 })
+            .flatMap { localData in
+                self.remoteUseCase.getListNote()
+                    .replaceError(with: [])
+                    .map { (localData, $0) }
+            }
+            .eraseToAnyPublisher()
+        
+        let syncRemoteListData: AnyPublisher<[NoteModel], Never> = input.syncListNotePublisher
+            .share()
+            .dropFirst()
             .flatMap { self.remoteUseCase.getListNote() }
             .replaceError(with: [])
             .eraseToAnyPublisher()
         
-        let firstLoadLocalPublisher: AnyPublisher<Void, Error> = input.syncListNotePublisher
-            .share()
-            .first()
-            .flatMap { self.coreDataUseCase.fetchNotes() }
-            .eraseToAnyPublisher()
-        
-        let syncListNoteGeneratorPublisher = Publishers.Merge(
-            firstLocalData
-                .withLatestFrom(getRemoteListData, resultSelector: { ($0, $1) }),
-            getRemoteListData.withLatestFrom(localData, resultSelector: { ($1, $0) }))
+        let syncListNoteGeneratorPublisher: AnyPublisher<SyncListNoteModel, Never> = Publishers.Merge(
+            firstLoadPublisher,
+            syncRemoteListData.withLatestFrom(localData, resultSelector: { ($1, $0) })
+        )
             .flatMap { currentData, remoteData in
                 SyncListNoteDataGenerator(localData: currentData, remoteData: remoteData)
                     .mergePublisher
             }
             .share()
+            .eraseToAnyPublisher()
         
-        let syncLocalListPublisher = syncListNoteGeneratorPublisher
+        let syncLocalListPublisher: AnyPublisher<Void, Never> = syncListNoteGeneratorPublisher
             .map { $0.updatedLocalList }
-            .flatMap { self.coreDataUseCase.saveNotes($0) }
+            .flatMap { self.coreDataUseCase.saveNotes($0).replaceError(with: ()) }
             .eraseToAnyPublisher()
         
         
-        let updateRemoteListPublisher: AnyPublisher<Void, Error> = syncListNoteGeneratorPublisher
+        let updateRemoteListPublisher: AnyPublisher<Void, Never> = syncListNoteGeneratorPublisher
             .flatMap { Publishers.Sequence(sequence: $0.needUpdateRemote) }
             .flatMap { self.remoteUseCase.updateNote($0) }
             .map { _ in }
+            .replaceError(with: ())
             .eraseToAnyPublisher()
         
         //MARK: Delete
-        let deleteLocalPublisher: AnyPublisher<NoteModel, Error> = input.deleteNotePublisher
+        let deleteLocalPublisher: AnyPublisher<(data: NoteModel, isDeleteSuccess: Bool), Never> = input.deleteNotePublisher
             .share()
             .flatMap { note in
                 var note = note
                 note.isDeleteLocal = true
                 return self.coreDataUseCase.updateNote(note)
-                    .map { _ in note }
-                    .eraseToAnyPublisher()
+                    .map { _ in (data: note, isDeleteSuccess: true) }
+                    .replaceError(with: (data: note, isDeleteSuccess: false))
             }
             .eraseToAnyPublisher()
         
-        let mergeDeleteLocalPublishers = Publishers
+        let mergeDeleteLocalPublishers: AnyPublisher<Void, Never> = Publishers
             .Merge(
                 deleteLocalPublisher
-                    .filter { $0.hasRemote },
+                    .filter { $0.data.hasRemote && $0.isDeleteSuccess }
+                    .map { $0.data },
                 syncListNoteGeneratorPublisher
                     .flatMap { Publishers.Sequence(sequence: $0.needDeleteRemote) }
             )
@@ -106,14 +115,19 @@ final class NoteListVM: BaseViewModel {
             }
             .flatMap { note in self.coreDataUseCase.deleteNote(note) }
             .map { _ in }
+            .replaceError(with: ())
             .eraseToAnyPublisher()
         
         //MARK: Add
-        let addNotePublisher: AnyPublisher<Void, Error> = Publishers
+        let addNotePublisher: AnyPublisher<Void, Never> = Publishers
             .Merge(
                 input.addNotePublisher
                     .flatMap { self.coordinator.goToAddNote() }
-                    .flatMap { note in self.coreDataUseCase.addNote(note).map { _ in note} },
+                    .flatMap { note in
+                        self.coreDataUseCase.addNote(note)
+                            .map { _ in note }
+                            .replaceError(with: note)
+                    },
                 syncListNoteGeneratorPublisher
                     .flatMap { Publishers.Sequence(sequence: $0.needAddRemote) }
             )
@@ -123,16 +137,21 @@ final class NoteListVM: BaseViewModel {
                 note.hasRemote = true
                 return self.coreDataUseCase.updateNote(note)
             }
+            .replaceError(with: ())
             .eraseToAnyPublisher()
         
-        let editNotePublisher: AnyPublisher<Void, Error> = input.selectNotePublisher
+        let editNotePublisher: AnyPublisher<Void, Never> = input.selectNotePublisher
             .flatMap { self.coordinator.goToEditNote(note: $0) }
-            .flatMap {
-                Publishers.Zip(self.coreDataUseCase.updateNote($0), self.remoteUseCase.updateNote($0))
+            .flatMap { note in
+                self.coreDataUseCase.updateNote(note)
+                    .map { _ in note }
+                    .replaceError(with: note)
             }
+            .flatMap { self.remoteUseCase.updateNote($0) }
             .map { _  -> Void in }
+            .replaceError(with: ())
             .eraseToAnyPublisher()
-            
+        
         
         let listNotePubliser: AnyPublisher<[NoteModel], Never> = Publishers
             .CombineLatest(
@@ -144,8 +163,7 @@ final class NoteListVM: BaseViewModel {
             }
             .eraseToAnyPublisher()
         
-        let loadPublisher = Publishers.Merge3(
-            firstLoadLocalPublisher,
+        let loadPublisher: AnyPublisher<Void, Never> = Publishers.Merge(
             syncLocalListPublisher,
             updateRemoteListPublisher)
             .eraseToAnyPublisher()

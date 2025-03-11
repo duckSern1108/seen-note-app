@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 import Combine
 import CombineCocoa
 
@@ -55,54 +56,39 @@ class FloatingInputView: WithoutNibView {
         let textFieldContainer = UIView()
         textFieldContainer.addSubview(textField)
         textField.alpha = 0
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            textField.leadingAnchor.constraint(equalTo: textFieldContainer.leadingAnchor),
-            textField.trailingAnchor.constraint(equalTo: textFieldContainer.trailingAnchor),
-            textField.bottomAnchor.constraint(equalTo: textFieldContainer.bottomAnchor),
-            textField.heightAnchor.constraint(equalToConstant: 20)
-        ])
+        textField.snp.makeConstraints { make in
+            make.bottom.horizontalEdges.equalToSuperview()
+            make.height.equalTo(20)
+        }
         
         addSubview(stackViewContainer)
-        stackViewContainer.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            stackViewContainer.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            stackViewContainer.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            stackViewContainer.topAnchor.constraint(equalTo: topAnchor, constant: 10),
-            stackViewContainer.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-        ])
+        stackViewContainer.snp.makeConstraints { make in
+            make.horizontalEdges.equalToSuperview().inset(16)
+            make.verticalEdges.equalToSuperview().inset(10)
+        }
         
         stackViewContainer.addArrangedSubview(textFieldContainer)
-        textFieldContainer.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            textFieldContainer.topAnchor.constraint(equalTo: stackViewContainer.topAnchor),
-            textFieldContainer.bottomAnchor.constraint(equalTo: stackViewContainer.bottomAnchor),
-        ])
+        textFieldContainer.snp.makeConstraints { make in
+            make.verticalEdges.equalToSuperview()
+        }
         
         let closeImageView = UIImageView(image: UIImage(systemName: "xmark"))
         closeImageView.contentMode = .scaleAspectFit
         closeImageView.tintColor = .black
         stackViewContainer.addArrangedSubview(closeImageContainerView)
         closeImageContainerView.addSubview(closeImageView)
-        NSLayoutConstraint.activate([
-            closeImageContainerView.widthAnchor.constraint(equalToConstant: 20),
-            closeImageContainerView.heightAnchor.constraint(equalToConstant: 20)
-        ])
-        closeImageView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            closeImageView.heightAnchor.constraint(equalToConstant: 16),
-            closeImageView.centerYAnchor.constraint(equalTo: closeImageContainerView.centerYAnchor),
-            closeImageView.centerXAnchor.constraint(equalTo: closeImageContainerView.centerXAnchor)
-        ])
-        
+        closeImageContainerView.snp.makeConstraints { make in
+            make.height.width.equalTo(20)
+        }
+        closeImageView.snp.makeConstraints { make in
+            make.height.equalTo(16)
+            make.center.equalToSuperview()
+        }
         closeImageContainerView.addSubview(closeButton)
+        closeButton.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         closeButton.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            closeButton.leadingAnchor.constraint(equalTo: closeImageContainerView.leadingAnchor),
-            closeButton.trailingAnchor.constraint(equalTo: closeImageContainerView.trailingAnchor),
-            closeButton.topAnchor.constraint(equalTo: closeImageContainerView.topAnchor),
-            closeButton.bottomAnchor.constraint(equalTo: closeImageContainerView.bottomAnchor),
-        ])
         closeImageContainerView.isHidden = true
         
         addSubview(titleLabel)
@@ -124,7 +110,11 @@ class FloatingInputView: WithoutNibView {
         super.layoutSubviews()
         guard !textField.isEditing else { return }
         titleLabel.bounds.size.width = bounds.size.width - 16 * 2
+        titleLabel.frame.origin.y = bounds.midY - titleLabel.frame.height / 2
         titleLabel.frame.origin.x = 16
+        if !(textField.text ?? "").isEmpty {
+            setupUIWhenTextNotEmpty()
+        }
     }
     
     private func bindAction() {

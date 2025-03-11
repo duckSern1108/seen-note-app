@@ -11,7 +11,7 @@ import CoreData
 import Domain
 
 
-@objc(CoreDataNote) @objcMembers
+@objc(CoreDataNote)
 class CoreDataNote: NSManagedObject {
 
 }
