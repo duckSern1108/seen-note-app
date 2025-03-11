@@ -8,6 +8,7 @@
 import UIKit
 import Combine
 import CombineCocoa
+import SnapKit
 import Domain
 
 
@@ -19,8 +20,18 @@ class SingleNoteVC: UIViewController {
         return vc
     }
     
-    @IBOutlet private weak var titleView: FloatingInputView!
-    @IBOutlet private weak var contentTextView: FloatingTextView!
+    private lazy var titleView = {
+        let ret = FloatingInputView()
+        ret.bindUIConfig(.init(title: "Title"))
+        return ret
+    }()
+    private lazy var contentTextView = {
+        let ret = FloatingTextView()
+        ret.title = "Content"
+        ret.textContainerInset = .init(top: 24, left: 8, bottom: 8, right: 8)
+        ret.font = .systemFont(ofSize: 15)
+        return ret
+    }()
     
     private var viewModel: SingleNoteVM!
     private var cancellations = Set<AnyCancellable>()
@@ -43,10 +54,32 @@ class SingleNoteVC: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(onDone))
         view.backgroundColor = .init(hex: 0xF1F1F1)
         
-        contentTextView.title = "Content"
-        contentTextView.textContainerInset = .init(top: 24, left: 8, bottom: 8, right: 8)
+        view.addSubview(titleView)
+        titleView.snp.makeConstraints { make in
+            make.height.equalTo(56)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).inset(16)
+            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(16)
+        }
         
-        titleView.bindUIConfig(.init(title: "Title"))
+        view.addSubview(contentTextView)
+        contentTextView.snp.makeConstraints { make in
+            make.top.equalTo(titleView.snp.bottom).offset(16)
+            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(16)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
+        }
+        
+        KeyboardCombine.heightPublisher
+            .sink { [weak self] height in
+                guard let self = self else { return }
+                UIView.animate(withDuration: 0.25, animations: {
+                    if height > 0 {
+                        self.additionalSafeAreaInsets.bottom = height - self.view.safeAreaInsets.bottom + 16
+                    } else {
+                        self.additionalSafeAreaInsets.bottom = 0
+                    }
+                })
+            }
+            .store(in: &cancellations)
     }
     
     private func bindViewModel() {
@@ -58,10 +91,12 @@ class SingleNoteVC: UIViewController {
             ))
         
         output.notePublisher.map { $0.content }
+            .receive(on: DispatchQueue.main)
             .assign(to: \.text, on: contentTextView)
             .store(in: &cancellations)
         
         output.notePublisher.map { $0.title }
+            .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] in
                 guard let self = self else { return }
                 self.titleView.textField.text = $0
