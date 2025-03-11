@@ -6,6 +6,8 @@
 //
 
 import UIKit
+import Domain
+
 
 final class NoteListCell: UITableViewCell {
     

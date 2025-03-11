@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import Domain
 
 
 //TODO: Unit test

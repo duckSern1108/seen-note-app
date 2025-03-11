@@ -7,18 +7,19 @@
 
 import Foundation
 import Combine
+import Domain
 
 
-enum NoteRouter: APIRouter {
-    func path() -> String {
+public enum NoteRouter: APIRouter {
+    public func path() -> String {
         ""
     }
     
-    func method() -> HTTPMethod {
+    public func method() -> HTTPMethod {
         .post
     }
     
-    func params() -> [String : Any] {
+    public func params() -> [String : Any] {
         [:]
     }
     

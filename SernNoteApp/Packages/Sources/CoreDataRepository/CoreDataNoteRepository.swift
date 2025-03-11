@@ -8,19 +8,10 @@
 import UIKit
 import Combine
 import CoreData
+import Domain
 
 
-protocol CoreDataManageNoteUseCase {
-    var notes: AnyPublisher<[NoteModel], Never> { get }
-    
-    func addNote(_ data: NoteModel) -> AnyPublisher<Void, Error>
-    func updateNote(_ data: NoteModel) -> AnyPublisher<Void, Error>
-    func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error>
-    func fetchNotes() -> AnyPublisher<Void, Error>
-    func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error>
-}
-
-protocol CoreDataManageNoteRepository {
+public protocol CoreDataNoteRepository {
     func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error>
     func fetchNotes() -> AnyPublisher<[NoteModel], Error>
     func addNote(_ data: NoteModel) -> AnyPublisher<Void, Error>
@@ -28,71 +19,39 @@ protocol CoreDataManageNoteRepository {
     func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error>
 }
 
-class CoreDataManageNoteUseCaseDefault: CoreDataManageNoteUseCase {
-    private let _notes = CurrentValueSubject<[NoteModel], Never>([])
+public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked Sendable {
+    public static let shared = CoreDataNoteRepositoryDefault()
     
-    var notes: AnyPublisher<[NoteModel], Never> { _notes.eraseToAnyPublisher() }
+    var context: NSManagedObjectContext!
+    var fetchController: NSFetchedResultsController<CoreDataNote>!
+    private var persistentContainer: NSPersistentContainer!
     
-    private let repository: CoreDataManageNoteRepository
-    
-    init(repository: CoreDataManageNoteRepository) {
-        self.repository = repository
+    private init() {
+        let bundle = Bundle.module
+        let modelURL = bundle.url(forResource: "SernNoteApp", withExtension: ".momd")!
+        let model = NSManagedObjectModel(contentsOf: modelURL)!
+        let container = NSPersistentContainer(name: "SernNoteApp", managedObjectModel: model)
+        self.persistentContainer = container
+        container.loadPersistentStores(completionHandler: { [weak self] (storeDescription, error) in
+            if let error = error as NSError? {
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            }
+            guard let self = self else { return }
+            self.context = persistentContainer.newBackgroundContext()
+            // Create Fetch Request
+            let fetchRequest: NSFetchRequest<CoreDataNote> = CoreDataNote.fetchRequest()
+            // Configure Fetch Request
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "created", ascending: true)]
+            self.fetchController = NSFetchedResultsController(
+                fetchRequest: fetchRequest,
+                managedObjectContext: context,
+                sectionNameKeyPath: nil, cacheName: nil)
+        })
+        
     }
     
-    func addNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        repository.addNote(data)
-            .flatMap { self.fetchNotes() }
-            .map { _ in }
-            .eraseToAnyPublisher()
-    }
-    
-    func updateNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        repository.updateNote(data)
-            .flatMap { self.fetchNotes() }
-            .map { _ in }
-            .eraseToAnyPublisher()
-    }
-    
-    func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        repository.deleteNote(data)
-            .flatMap { self.fetchNotes() }
-            .map { _ in }
-            .eraseToAnyPublisher()
-    }
-    
-    func fetchNotes() -> AnyPublisher<Void, Error> {
-        repository.fetchNotes()
-            .handleEvents(receiveOutput: { [weak self] in
-                guard let self = self else { return }
-                self._notes.value = $0
-            })
-            .map { _ in }
-            .eraseToAnyPublisher()
-    }
-    
-    func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, any Error> {
-        repository.saveNotes(datas)
-    }
-}
-
-class CoreDataManageNoteRepositoryDefault: CoreDataManageNoteRepository {
-    
-    let context: NSManagedObjectContext
-    let fetchController: NSFetchedResultsController<CoreDataNote>
-    
-    init(context: NSManagedObjectContext) {
-        self.context = context
-        // Create Fetch Request
-        let fetchRequest: NSFetchRequest<CoreDataNote> = CoreDataNote.fetchRequest()
-        // Configure Fetch Request
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "created", ascending: true)]
-        fetchController = NSFetchedResultsController(fetchRequest: fetchRequest,
-                                                     managedObjectContext: context,
-                                                     sectionNameKeyPath: nil, cacheName: nil)
-    }
-    
-    func addNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        let context = self.context
+    public func addNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
+        let context: NSManagedObjectContext! = self.context
         return Future<Void, Error>() { promise in
             let entity = NSEntityDescription.entity(forEntityName: "CoreDataNote", in: context)!
             let newNote = CoreDataNote(entity: entity, insertInto: context)
@@ -107,8 +66,8 @@ class CoreDataManageNoteRepositoryDefault: CoreDataManageNoteRepository {
         .eraseToAnyPublisher()
     }
     
-    func updateNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
-        let context = self.context
+    public func updateNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
+        let context: NSManagedObjectContext! = self.context
         return Future<Void, Error>() { promise in
             context.perform { [weak self] in
                 guard let self = self else {
@@ -131,7 +90,7 @@ class CoreDataManageNoteRepositoryDefault: CoreDataManageNoteRepository {
         .eraseToAnyPublisher()
     }
     
-    func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
+    public func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error> {
         Future<Void, Error>() { [weak self] promise in
             guard let self = self else {
                 promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
@@ -158,7 +117,7 @@ class CoreDataManageNoteRepositoryDefault: CoreDataManageNoteRepository {
         .eraseToAnyPublisher()
     }
     
-    func fetchNotes() -> AnyPublisher<[NoteModel], Error> {
+    public func fetchNotes() -> AnyPublisher<[NoteModel], Error> {
         Future<[NoteModel], Error>() { [weak self] promise in
             guard let self = self else {
                 promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))
@@ -175,7 +134,7 @@ class CoreDataManageNoteRepositoryDefault: CoreDataManageNoteRepository {
         .eraseToAnyPublisher()
     }
     
-    func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error> {
+    public func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error> {
         Future<Void, Error>() { [weak self] promise in
             guard let self = self else {
                 promise(.failure(GeneralError.localError(msg: "Không tìm thấy object")))

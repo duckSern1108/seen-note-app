@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		51B470EB2D80131D0001413B /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 51B470EA2D80131D0001413B /* Domain */; };
+		51B470EF2D8016720001413B /* CoreDataRepository in Frameworks */ = {isa = PBXBuildFile; productRef = 51B470EE2D8016720001413B /* CoreDataRepository */; };
+		51B470F12D8016750001413B /* NoteUseCase in Frameworks */ = {isa = PBXBuildFile; productRef = 51B470F02D8016750001413B /* NoteUseCase */; };
 		51FD8EAD2D7EF01000210180 /* CombineCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 51FD8EAC2D7EF01000210180 /* CombineCocoa */; };
 /* End PBXBuildFile section */
 
@@ -69,6 +72,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				51B470EF2D8016720001413B /* CoreDataRepository in Frameworks */,
+				51B470EB2D80131D0001413B /* Domain in Frameworks */,
+				51B470F12D8016750001413B /* NoteUseCase in Frameworks */,
 				51FD8EAD2D7EF01000210180 /* CombineCocoa in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -90,12 +96,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		51B470E92D80131D0001413B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		51E6EE2C2D7B446D00E0B963 = {
 			isa = PBXGroup;
 			children = (
 				51E6EE372D7B446D00E0B963 /* SernNoteApp */,
 				51E6EE512D7B447000E0B963 /* SernNoteAppTests */,
 				51E6EE5B2D7B447000E0B963 /* SernNoteAppUITests */,
+				51B470E92D80131D0001413B /* Frameworks */,
 				51E6EE362D7B446D00E0B963 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -131,6 +145,9 @@
 			name = SernNoteApp;
 			packageProductDependencies = (
 				51FD8EAC2D7EF01000210180 /* CombineCocoa */,
+				51B470EA2D80131D0001413B /* Domain */,
+				51B470EE2D8016720001413B /* CoreDataRepository */,
+				51B470F02D8016750001413B /* NoteUseCase */,
 			);
 			productName = SernNoteApp;
 			productReference = 51E6EE352D7B446D00E0B963 /* SernNoteApp.app */;
@@ -589,6 +606,18 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		51B470EA2D80131D0001413B /* Domain */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Domain;
+		};
+		51B470EE2D8016720001413B /* CoreDataRepository */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreDataRepository;
+		};
+		51B470F02D8016750001413B /* NoteUseCase */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NoteUseCase;
+		};
 		51FD8EAC2D7EF01000210180 /* CombineCocoa */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 51FD8EAB2D7EF01000210180 /* XCRemoteSwiftPackageReference "CombineCocoa" */;

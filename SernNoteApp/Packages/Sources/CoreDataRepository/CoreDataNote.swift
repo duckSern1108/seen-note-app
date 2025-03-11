@@ -8,20 +8,26 @@
 
 import Foundation
 import CoreData
+import Domain
 
+
+@objc(CoreDataNote) @objcMembers
+class CoreDataNote: NSManagedObject {
+
+}
 
 extension CoreDataNote {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CoreDataNote> {
+    @nonobjc class func fetchRequest() -> NSFetchRequest<CoreDataNote> {
         return NSFetchRequest<CoreDataNote>(entityName: "CoreDataNote")
     }
 
-    @NSManaged public var content: String
-    @NSManaged public var created: Date
-    @NSManaged public var hasRemote: Bool
-    @NSManaged public var isDeleteLocal: Bool
-    @NSManaged public var lastUpdated: Date
-    @NSManaged public var title: String
+    @NSManaged var content: String
+    @NSManaged var created: Date
+    @NSManaged var hasRemote: Bool
+    @NSManaged var isDeleteLocal: Bool
+    @NSManaged var lastUpdated: Date
+    @NSManaged var title: String
 
 }
 

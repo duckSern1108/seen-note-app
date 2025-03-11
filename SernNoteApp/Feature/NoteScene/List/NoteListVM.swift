@@ -7,6 +7,8 @@
 
 import Foundation
 import Combine
+import Domain
+import NoteUseCase
 
 
 final class NoteListVM: BaseViewModel {
@@ -22,19 +24,17 @@ final class NoteListVM: BaseViewModel {
     struct Output {
         var listNotePubliser: AnyPublisher<[NoteModel], Never>
         
-        var firstLoadLocalPublisher: AnyPublisher<Void, Error>
-        var syncLocalListPublisher: AnyPublisher<Void, Error>
-        var updateRemoteListPublisher: AnyPublisher<Void, Error>
+        var loadPubliser: AnyPublisher<Void, Error>
         var editNotePublisher: AnyPublisher<Void, Error>
         var addNotePublisher: AnyPublisher<Void, Error>
         var deleteNotePublisher: AnyPublisher<Void, Error>
     }
     
-    let coreDataUseCase: CoreDataManageNoteUseCase
-    let remoteUseCase: ManageNoteUseCase
+    let coreDataUseCase: CoreDataNoteUseCase
+    let remoteUseCase: NoteUseCase
     let coordinator: NoteListCoordinator
     
-    init(coreDataUseCase: CoreDataManageNoteUseCase, remoteUseCase: ManageNoteUseCase, coordinator: NoteListCoordinator) {
+    init(coreDataUseCase: CoreDataNoteUseCase, remoteUseCase: NoteUseCase, coordinator: NoteListCoordinator) {
         self.coreDataUseCase = coreDataUseCase
         self.remoteUseCase = remoteUseCase
         self.coordinator = coordinator
@@ -144,11 +144,15 @@ final class NoteListVM: BaseViewModel {
             }
             .eraseToAnyPublisher()
         
+        let loadPublisher = Publishers.Merge3(
+            firstLoadLocalPublisher,
+            syncLocalListPublisher,
+            updateRemoteListPublisher)
+            .eraseToAnyPublisher()
+        
         return Output(
             listNotePubliser: listNotePubliser,
-            firstLoadLocalPublisher: firstLoadLocalPublisher,
-            syncLocalListPublisher: syncLocalListPublisher,
-            updateRemoteListPublisher: updateRemoteListPublisher,
+            loadPubliser: loadPublisher,
             editNotePublisher: editNotePublisher,
             addNotePublisher: addNotePublisher,
             deleteNotePublisher: mergeDeleteLocalPublishers)

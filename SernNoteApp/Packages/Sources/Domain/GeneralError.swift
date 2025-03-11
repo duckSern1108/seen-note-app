@@ -8,7 +8,7 @@
 import Foundation
 
 
-enum GeneralError: Error {
+public enum GeneralError: Error {
     case unexpected
     case localError(msg: String)
 }

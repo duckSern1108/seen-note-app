@@ -8,6 +8,7 @@
 import UIKit
 import Combine
 import CombineCocoa
+import Domain
 
 
 final class NoteListVC: UIViewController {
@@ -80,7 +81,7 @@ final class NoteListVC: UIViewController {
             }
             .store(in: &cancellations)
         
-        output.firstLoadLocalPublisher
+        output.loadPubliser
             .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
             .store(in: &cancellations)
         
@@ -89,14 +90,6 @@ final class NoteListVC: UIViewController {
             .store(in: &cancellations)
         
         output.editNotePublisher
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
-            .store(in: &cancellations)
-        
-        output.syncLocalListPublisher
-            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
-            .store(in: &cancellations)
-        
-        output.updateRemoteListPublisher
             .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
             .store(in: &cancellations)
         

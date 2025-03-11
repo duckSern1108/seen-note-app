@@ -8,6 +8,7 @@
 import UIKit
 import Combine
 import CombineCocoa
+import Domain
 
 
 class SingleNoteVC: UIViewController {

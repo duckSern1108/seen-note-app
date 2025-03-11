@@ -19,24 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let scene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: scene)
         self.window = window
-        let coordinator = NoteListCoordinatorDefault()
         
-        // lấy AppDelegate
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        // lấy Managed Object Context
-        let mainContext = appDelegate.persistentContainer.viewContext
-        let backgroundContext = appDelegate.persistentContainer.newBackgroundContext()
-        backgroundContext.automaticallyMergesChangesFromParent = true
-        
-        let repository = CoreDataManageNoteRepositoryDefault(context: backgroundContext)
-        
-        let viewModel = NoteListVM(
-            coreDataUseCase: CoreDataManageNoteUseCaseDefault(repository: repository),
-            remoteUseCase: RemoteManageNoteUseCase(),
-            coordinator: coordinator)
-        let navigationController = UINavigationController(rootViewController: NoteListVC.newVC(viewModel: viewModel))
-        coordinator.navigationController = navigationController
-        window.rootViewController = navigationController
+        window.rootViewController = NoteSceneBuilder.buildListScreen()
         window.makeKeyAndVisible()
     }
 

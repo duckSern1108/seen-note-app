@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 
-protocol APIRouter {
+public protocol APIRouter {
     func path() -> String
     func method() -> HTTPMethod
     func baseURL() -> String
@@ -17,7 +17,7 @@ protocol APIRouter {
     func headers() -> [String: String?]
 }
 
-extension APIRouter {
+public extension APIRouter {
     func baseURL() -> String {
         return ""
     }
@@ -49,22 +49,22 @@ extension APIRouter {
     }
 }
 
-enum HTTPMethod: String {
+public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
 }
 
-enum APIError: LocalizedError {
+public enum APIError: LocalizedError {
     case routerNotValid
     case decodeFail
     case serverError(msg: String, code: Int)
     
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .routerNotValid:
-            return "Đã có lỗi xảy ra"
+            return "Some thing went wrong when building request"
         case .decodeFail:
-            return "Server trả về sai format"
+            return "Can not decode data"
         case .serverError(let msg, _):
             return msg
         }
@@ -72,7 +72,7 @@ enum APIError: LocalizedError {
 }
 
 extension APIRouter {
-    func anyPublisher<T: Codable>() -> AnyPublisher<T, Error> {
+    public func publisher<T: Codable>() -> AnyPublisher<T, Error> {
         do {
             let urlRequest = try self.urlRequest()
             return URLSession.shared.dataTaskPublisher(for: urlRequest)
@@ -90,7 +90,7 @@ extension APIRouter {
         }
     }
     
-    func anyPublisher() -> AnyPublisher<Void, Error> {
+    public func publisher() -> AnyPublisher<Void, Error> {
         do {
             let urlRequest = try self.urlRequest()
             return URLSession.shared.dataTaskPublisher(for: urlRequest)
