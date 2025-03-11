@@ -11,6 +11,7 @@ import Combine
 
 protocol BaseViewModel {
     associatedtype Input
+    associatedtype Output
     
-    func bind(input: Input, cancellations: inout Set<AnyCancellable>)
+    func transform(input: Input) -> Output
 }

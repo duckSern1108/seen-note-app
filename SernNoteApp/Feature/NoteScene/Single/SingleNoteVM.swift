@@ -15,14 +15,21 @@ class SingleNoteVM: BaseViewModel {
         var titlePublisher: AnyPublisher<String, Never>
         var contentPublisher: AnyPublisher<String, Never>
         var backPublisher: AnyPublisher<Void, Never>
-        var donePublisher: AnyPublisher<Void, Never>
     }
     
-    @Published private(set) var title: String = ""
-    @Published private(set) var content: String = ""
-    @Published private(set) var note: NoteModel = .init()
+    struct Output {
+        var notePublisher: AnyPublisher<NoteModel, Never>
+        var backPublisher: AnyPublisher<Void, Never>
+    }
     
-    let delegate: PassthroughSubject<NoteModel, Never> = .init()
+    @Published private var title: String = ""
+    @Published private var content: String = ""
+    @Published private var note: NoteModel = .init()
+    
+    private let _delegate: PassthroughSubject<NoteModel, Never> = .init()
+    var delegate: AnyPublisher<NoteModel, Never> {
+        _delegate.eraseToAnyPublisher()
+    }
     
     private var cancellations = Set<AnyCancellable>()
     
@@ -32,15 +39,9 @@ class SingleNoteVM: BaseViewModel {
         self.content = note.content
     }
     
-    func bind(input: Input, cancellations: inout Set<AnyCancellable>) {
-        input.titlePublisher.share()
-            .assign(to: &$title)
-        
-        input.contentPublisher.share()
-            .assign(to: &$content)
-        
-        input.backPublisher
-            .withLatestFrom(Publishers.CombineLatest3($title, $content, $note), resultSelector: { $1 })
+    func transform(input: Input) -> Output {
+        let backPublisher: AnyPublisher<Void, Never> = input.backPublisher
+            .withLatestFrom(Publishers.CombineLatest3(input.titlePublisher, input.contentPublisher, $note), resultSelector: { $1 })
             .filter { (title, content, note) in
                 note.title != title || note.content != content
             }
@@ -51,9 +52,18 @@ class SingleNoteVM: BaseViewModel {
                 note.lastUpdated = Date()
                 return note
             }
-            .sink { [weak self] in
-                self?.delegate.send($0)
-            }
-            .store(in: &cancellations)
+            .handleEvents(receiveOutput: {
+                self._delegate.send($0)
+            })
+            .map { _ in }
+            .eraseToAnyPublisher()
+        
+        let isEditPublisher: AnyPublisher<Bool, Never> = $note
+            .map { $0.title.isEmpty && $0.content.isEmpty }
+            .eraseToAnyPublisher()
+        
+        return Output(
+            notePublisher: $note.eraseToAnyPublisher(),
+            backPublisher: backPublisher)
     }
 }

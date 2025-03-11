@@ -10,10 +10,7 @@ import Combine
 
 
 struct SyncListNoteModel {
-    var syncList: [NoteModel]
-    var needAddLocal: [NoteModel]
-    var needUpdateLocal: [NoteModel]
-    var needDeleteLocal: [NoteModel]
+    var updatedLocalList: [NoteModel]
     
     var needAddRemote: [NoteModel]
     var needUpdateRemote: [NoteModel]
@@ -33,15 +30,12 @@ struct SyncListNoteDataGenerator {
         let localMap = localData.mapCreateDateToElement
         let remoteMap = remoteData.mapCreateDateToElement
         
-        var needAddLocal: [NoteModel] = []
-        var needUpdateLocal: [NoteModel] = []
-        var needDeleteLocal: [NoteModel] = []
         var needAddRemote: [NoteModel] = []
         var needUpdateRemote: [NoteModel] = []
         var needDeleteRemote: [NoteModel] = []
         
         
-        let syncList: [NoteModel] = unionCreateDateSet.map { date in
+        let updatedLocalList: [NoteModel] = unionCreateDateSet.map { date in
             let hasRemote = remoteMap[date] != nil
             let hasLocal = localMap[date] != nil
             switch true {
@@ -56,9 +50,7 @@ struct SyncListNoteDataGenerator {
                 ret.hasRemote = true
                 if localMap[date]!.isDeleteLocal {
                     needDeleteRemote.append(ret)
-                } else if isRemoteNewest {
-                    needUpdateLocal.append(ret)
-                } else {
+                } else if !isRemoteNewest {
                     needUpdateRemote.append(ret)
                 }
                 ret.isDeleteLocal = localMap[date]!.isDeleteLocal
@@ -67,16 +59,11 @@ struct SyncListNoteDataGenerator {
             case hasRemote:
                 var ret = remoteMap[date]!
                 ret.hasRemote = true
-                needAddLocal.append(ret)
                 return ret
                 
             case hasLocal:
                 let localData = localMap[date]!
-                if localData.hasRemote {
-                    if localData.isDeleteLocal {
-                        needDeleteLocal.append(localData)
-                    }
-                } else {
+                if !localData.hasRemote {
                     needAddRemote.append(localData)
                 }
                 return localData
@@ -85,10 +72,7 @@ struct SyncListNoteDataGenerator {
             }
         }
         return Just(.init(
-            syncList: syncList,
-            needAddLocal: needAddLocal,
-            needUpdateLocal: needUpdateLocal,
-            needDeleteLocal: needDeleteLocal,
+            updatedLocalList: updatedLocalList,
             needAddRemote: needAddRemote,
             needUpdateRemote: needUpdateRemote,
             needDeleteRemote: needDeleteRemote))

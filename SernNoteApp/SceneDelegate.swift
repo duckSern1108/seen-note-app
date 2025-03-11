@@ -28,8 +28,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let backgroundContext = appDelegate.persistentContainer.newBackgroundContext()
         backgroundContext.automaticallyMergesChangesFromParent = true
         
+        let repository = CoreDataManageNoteRepositoryDefault(context: backgroundContext)
+        
         let viewModel = NoteListVM(
-            localUseCase: CoreDataManageNoteUseCase(context: backgroundContext),
+            coreDataUseCase: CoreDataManageNoteUseCaseDefault(repository: repository),
             remoteUseCase: RemoteManageNoteUseCase(),
             coordinator: coordinator)
         let navigationController = UINavigationController(rootViewController: NoteListVC.newVC(viewModel: viewModel))

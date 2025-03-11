@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import CombineCocoa
 
 
 final class NoteListVC: UIViewController {
@@ -39,19 +40,7 @@ final class NoteListVC: UIViewController {
         
         setupUI()
         
-        viewModel.bind(
-            input: .init(
-                searchQuery: textField.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
-                syncListNotePublisher: syncListNotePublisher.eraseToAnyPublisher(),
-                addNotePublisher: addNotePublisher.eraseToAnyPublisher(),
-                selectNotePublisher: selectNotePublisher.eraseToAnyPublisher(),
-                deleteNotePublisher: deleteNotePublisher.eraseToAnyPublisher()
-            ),
-            cancellations: &cancellations)
-        
         bindViewModel()
-        
-        syncListNotePublisher.send(())
     }
     
     private func setupUI() {
@@ -74,12 +63,44 @@ final class NoteListVC: UIViewController {
     }
     
     private func bindViewModel() {
-        viewModel.$listNote
-            .flatMap { NoteListVCUIDataGenerator(data: $0).publiser }            
+        let output = viewModel.transform(
+            input: .init(
+                searchQuery: textField.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
+                syncListNotePublisher: syncListNotePublisher.eraseToAnyPublisher(),
+                addNotePublisher: addNotePublisher.eraseToAnyPublisher(),
+                selectNotePublisher: selectNotePublisher.eraseToAnyPublisher(),
+                deleteNotePublisher: deleteNotePublisher.eraseToAnyPublisher()
+            ))
+        
+        output.listNotePubliser
+            .receive(on: DispatchQueue.main)
+            .flatMap { NoteListVCUIDataGenerator(data: $0).publiser }
             .sink { [weak self] data in
                 self?.reloadList(data: data)
             }
             .store(in: &cancellations)
+        
+        output.firstLoadLocalPublisher
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancellations)
+        
+        output.addNotePublisher
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancellations)
+        
+        output.editNotePublisher
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancellations)
+        
+        output.syncLocalListPublisher
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancellations)
+        
+        output.updateRemoteListPublisher
+            .sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+            .store(in: &cancellations)
+        
+        syncListNotePublisher.send(())
     }
     
     private func reloadList(data: (sections: [Date], map:[Date: [NoteModel]])) {

@@ -24,30 +24,13 @@ class SingleNoteVC: UIViewController {
     private var viewModel: SingleNoteVM!
     private var cancellations = Set<AnyCancellable>()
     
-    private var voidPub = PassthroughSubject<Void, Never>()
+    private let _backPublisher = PassthroughSubject<Void, Never>()
+    private var backPublisher: AnyPublisher<Void, Never> { _backPublisher.eraseToAnyPublisher() }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(onDone))
-        view.backgroundColor = .init(hex: 0xF1F1F1)
-        
-        contentTextView.title = "Content"
-        contentTextView.textContainerInset = .init(top: 24, left: 8, bottom: 8, right: 8)
-        
-        viewModel.bind(
-            input: .init(
-                titlePublisher: titleView.textField.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
-                contentPublisher: contentTextView.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
-                backPublisher: voidPub.eraseToAnyPublisher(),
-                donePublisher: voidPub.eraseToAnyPublisher()),
-            cancellations: &cancellations)
-        
-        titleView.bindUIConfig(.init(title: "Title"))
-        titleView.bindInput(.init(
-            textObservable: viewModel.$title.map { $0 as String? }.eraseToAnyPublisher()
-        ))
-        
+        setupUI()
         bindViewModel()
     }
     
@@ -55,12 +38,29 @@ class SingleNoteVC: UIViewController {
         view.endEditing(true)
     }
     
+    private func setupUI() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(onDone))
+        view.backgroundColor = .init(hex: 0xF1F1F1)
+        
+        contentTextView.title = "Content"
+        contentTextView.textContainerInset = .init(top: 24, left: 8, bottom: 8, right: 8)
+        
+        titleView.bindUIConfig(.init(title: "Title"))
+    }
+    
     private func bindViewModel() {
-        viewModel.$note.map { $0.content }
+        let output = viewModel.transform(
+            input: .init(
+                titlePublisher: titleView.textField.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
+                contentPublisher: contentTextView.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
+                backPublisher: backPublisher.eraseToAnyPublisher()
+            ))
+        
+        output.notePublisher.map { $0.content }
             .assign(to: \.text, on: contentTextView)
             .store(in: &cancellations)
         
-        viewModel.$note.map { $0.title }
+        output.notePublisher.map { $0.title }
             .sink(receiveValue: { [weak self] in
                 guard let self = self else { return }
                 self.titleView.textField.text = $0
@@ -68,15 +68,19 @@ class SingleNoteVC: UIViewController {
             })
             .store(in: &cancellations)
         
-        viewModel.$note
+        output.notePublisher
             .map { ($0.title.isEmpty && $0.content.isEmpty) ? "Add note" : "Edit note" }
             .assign(to: \.title, on: navigationItem)
+            .store(in: &cancellations)
+        
+        output.backPublisher
+            .sink { _ in }
             .store(in: &cancellations)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        voidPub.send(())
+        _backPublisher.send(())
     }
     
 }

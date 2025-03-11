@@ -31,7 +31,12 @@ extension CoreDataNote : Identifiable {
 
 extension CoreDataNote {
     var noteModel: NoteModel {
-        .init(hasRemote: hasRemote, isDeleteLocal: isDeleteLocal, title: title, content: content, created: created, lastUpdated: lastUpdated)
+        .init(hasRemote: hasRemote,
+              isDeleteLocal: isDeleteLocal,
+              title: title,
+              content: content,
+              created: created,
+              lastUpdated: lastUpdated)
     }
     
     func updateFromNote(_ data: NoteModel) {
