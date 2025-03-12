@@ -174,7 +174,7 @@ final class NoteListVM: BaseViewModel {
                 input.searchQuery
             )
             .flatMap { (list, query) in
-                SearchListNoteOperator(data: list, query: query).searchPublisher
+                SearchListNoteGenerator(data: list, query: query).searchPublisher
             }
             .eraseToAnyPublisher()
         

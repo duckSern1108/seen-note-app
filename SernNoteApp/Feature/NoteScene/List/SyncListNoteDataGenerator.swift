@@ -34,8 +34,7 @@ struct SyncListNoteDataGenerator {
         var needAddRemote: [NoteModel] = []
         var needUpdateRemote: [NoteModel] = []
         var needDeleteRemote: [NoteModel] = []
-        
-        
+                
         let updatedLocalList: [NoteModel] = unionCreateDateSet.map { date in
             let hasRemote = remoteMap[date] != nil
             let hasLocal = localMap[date] != nil
@@ -50,7 +49,7 @@ struct SyncListNoteDataGenerator {
                 }
                 ret.hasRemote = true
                 if localMap[date]!.isDeleteLocal {
-                    needDeleteRemote.append(ret)
+                    needDeleteRemote.append(remoteMap[date]!)
                 } else if !isRemoteNewest {
                     needUpdateRemote.append(ret)
                 }

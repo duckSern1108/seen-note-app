@@ -31,7 +31,7 @@ final class TestNoteListVMTests: XCTestCase {
             coordinator: coordinator)
     }
     
-    func test_sync_local_list_when_trigger() throws {
+    func test_transform_sync_publisher_to_call_api() throws {
         let syncListNotePublisher = PassthroughSubject<Void, Never>()
         let output = viewModel.transform(input: .mock(
             syncListNotePublisher: syncListNotePublisher.eraseToAnyPublisher()
@@ -39,46 +39,46 @@ final class TestNoteListVMTests: XCTestCase {
         output.loadPubliser.sink(receiveValue: { _ in }).store(in: &cancellations)
         
         syncListNotePublisher.send(())
-        XCTAssertTrue(coreDataUseCase.fetchListNoteCalled, "Not call get data from core data")
-        XCTAssertTrue(coreDataUseCase.saveListNoteCalled, "Not call save data to core data")
-        XCTAssertTrue(remoteUseCase.getListNoteCalled, "Not call get data from remote")
+        XCTAssertTrue(coreDataUseCase.fetchListNoteCalled)
+        XCTAssertTrue(remoteUseCase.getListNoteCalled)
+        XCTAssertTrue(coreDataUseCase.saveListNoteCalled)
     }
     
-    func test_call_api_when_add() throws {
+    func test_tranform_add_publisher_to_call_api() throws {
         let addNotePublisher = PassthroughSubject<Void, Never>()
         let output = viewModel.transform(input: .mock(
             addNotePublisher: addNotePublisher.eraseToAnyPublisher()
         ))
         output.addNotePublisher.sink(receiveValue: { _ in }).store(in: &cancellations)
         addNotePublisher.send(())
-        XCTAssertTrue(coreDataUseCase.addNoteCalled, "Not call add to core data")
-        XCTAssertTrue(remoteUseCase.addNoteCalled, "Note call add data to remote")
-        XCTAssertTrue(coreDataUseCase.updateNoteCalled, "Note call update data to core data")
+        XCTAssertTrue(coreDataUseCase.addNoteCalled)
+        XCTAssertTrue(remoteUseCase.addNoteCalled)
+        XCTAssertTrue(coreDataUseCase.updateNoteCalled)
     }
     
-    func test_call_api_when_edit() throws {
+    func test_tranform_edit_publisher_to_call_api() throws {
         let editNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             selectNotePublisher: editNotePublisher.eraseToAnyPublisher()
         ))
         output.editNotePublisher.sink(receiveValue: { _ in }).store(in: &cancellations)
         editNotePublisher.send(NoteModel())
-        XCTAssertTrue(coreDataUseCase.updateNoteCalled, "Not call update to core data")
-        XCTAssertTrue(remoteUseCase.updateNoteCalled, "Note call update data to remote")
+        XCTAssertTrue(coreDataUseCase.updateNoteCalled)
+        XCTAssertTrue(remoteUseCase.updateNoteCalled)
     }
     
-    func test_call_api_when_delete_local_note() throws {
+    func test_tranform_delete_local_note_publisher_to_call_api() throws {
         let deleteNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             deleteNotePublisher: deleteNotePublisher.eraseToAnyPublisher()
         ))
         output.deleteNotePublisher.sink(receiveValue: { _ in }).store(in: &cancellations)
         deleteNotePublisher.send(NoteModel())
-        XCTAssertTrue(coreDataUseCase.deleteNoteCalled, "Not call delete to core data")
-        XCTAssertTrue(!remoteUseCase.deleteNoteCalled, "Note call delete data to remote")
+        XCTAssertTrue(coreDataUseCase.deleteNoteCalled)
+        XCTAssertFalse(remoteUseCase.deleteNoteCalled)
     }
     
-    func test_call_api_when_delete_remote_note() throws {
+    func test_tranform_delete_remote_note_publisher_to_call_api() throws {
         let deleteNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             deleteNotePublisher: deleteNotePublisher.eraseToAnyPublisher()
@@ -87,9 +87,29 @@ final class TestNoteListVMTests: XCTestCase {
         var remoteNote = NoteModel()
         remoteNote.hasRemote = true
         deleteNotePublisher.send(remoteNote)
-        XCTAssertTrue(coreDataUseCase.updateNoteCalled, "Not call update to core data")
-        XCTAssertTrue(coreDataUseCase.deleteNoteCalled, "Not call delete to core data")
-        XCTAssertTrue(remoteUseCase.deleteNoteCalled, "Note call delete data to remote")
+        XCTAssertTrue(coreDataUseCase.updateNoteCalled)
+        XCTAssertTrue(coreDataUseCase.deleteNoteCalled)
+        XCTAssertTrue(remoteUseCase.deleteNoteCalled)
+    }
+    
+    func test_tranform_select_publisher_to_navigate_edit_view() {
+        let selectNotePublisher = PassthroughSubject<NoteModel, Never>()
+        let output = viewModel.transform(input: .mock(
+            selectNotePublisher: selectNotePublisher.eraseToAnyPublisher()
+        ))
+        output.editNotePublisher.sink(receiveValue: { _ in }).store(in: &cancellations)
+        selectNotePublisher.send(NoteModel())
+        XCTAssertTrue(coordinator.didGoToEditNote)
+    }
+    
+    func test_tranform_add_publisher_to_navigate_add_view() {
+        let addNotePublisher = PassthroughSubject<Void, Never>()
+        let output = viewModel.transform(input: .mock(
+            addNotePublisher: addNotePublisher.eraseToAnyPublisher()
+        ))
+        output.addNotePublisher.sink(receiveValue: { _ in }).store(in: &cancellations)
+        addNotePublisher.send(())
+        XCTAssertTrue(coordinator.didGoToAddNote)
     }
 }
 

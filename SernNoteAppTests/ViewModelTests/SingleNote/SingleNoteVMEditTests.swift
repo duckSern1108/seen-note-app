@@ -46,7 +46,7 @@ final class SingleNoteVMEditTests: XCTestCase {
         })
         .store(in: &cancellations)
         backPublisher.send(())
-        XCTAssertNil(delegateNote == nil)
+        XCTAssertNil(delegateNote)
     }
     
     func test_note_call_delegate_when_back_with_different_data_before() throws {

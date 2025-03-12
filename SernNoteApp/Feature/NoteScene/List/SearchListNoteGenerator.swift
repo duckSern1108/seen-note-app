@@ -11,7 +11,7 @@ import Domain
 
 
 //TODO: Unit test
-struct SearchListNoteOperator {
+struct SearchListNoteGenerator {
     let data: [NoteModel]
     let query: String
     

@@ -14,11 +14,16 @@ import Domain
 class MockNoteListCoordinator: NoteListCoordinator {
     weak var navigationController: UINavigationController?
     
-    func goToEditNote(note: NoteModel) -> AnyPublisher<NoteModel, Never> {
-        return Just(note).eraseToAnyPublisher()
-    }
+    private(set) var didGoToAddNote = false
+    private(set) var didGoToEditNote = false
     
     func goToAddNote() -> AnyPublisher<NoteModel, Never> {
+        didGoToAddNote = true
         return Just(NoteModel()).eraseToAnyPublisher()
+    }
+    
+    func goToEditNote(note: NoteModel) -> AnyPublisher<NoteModel, Never> {
+        didGoToEditNote = true
+        return Just(note).eraseToAnyPublisher()
     }
 }

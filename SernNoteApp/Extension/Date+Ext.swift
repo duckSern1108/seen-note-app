@@ -30,6 +30,10 @@ extension Date {
     func startOfMonth() -> Date {
         return Calendar.current.date(from: Calendar.current.dateComponents([.year, .month, .day], from: Calendar.current.startOfDay(for: self)))!
     }
+    
+    func startOfDay() -> Date {
+        Calendar.current.startOfDay(for: self)
+    }
 }
 
 extension Formatter {
