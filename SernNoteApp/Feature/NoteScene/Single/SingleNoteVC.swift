@@ -100,7 +100,6 @@ class SingleNoteVC: UIViewController {
             .sink(receiveValue: { [weak self] in
                 guard let self = self else { return }
                 self.titleView.textField.text = $0
-                self.titleView.textField.sendActions(for: .valueChanged)
             })
             .store(in: &cancellations)
         

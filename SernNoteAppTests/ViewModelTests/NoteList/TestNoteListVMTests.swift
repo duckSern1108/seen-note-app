@@ -21,6 +21,7 @@ final class TestNoteListVMTests: XCTestCase {
     private var cancellations = Set<AnyCancellable>()
     
     override func setUp() {
+        super.setUp()
         coreDataUseCase = MockCoreDataUseCase()
         remoteUseCase = MockRemoteNoteUseCase()
         coordinator = MockNoteListCoordinator()
@@ -52,6 +53,7 @@ final class TestNoteListVMTests: XCTestCase {
         addNotePublisher.send(())
         XCTAssertTrue(coreDataUseCase.addNoteCalled, "Not call add to core data")
         XCTAssertTrue(remoteUseCase.addNoteCalled, "Note call add data to remote")
+        XCTAssertTrue(coreDataUseCase.updateNoteCalled, "Note call update data to core data")
     }
     
     func test_call_api_when_edit() throws {
