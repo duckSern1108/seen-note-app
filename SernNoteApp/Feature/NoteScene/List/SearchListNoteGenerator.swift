@@ -16,7 +16,6 @@ struct SearchListNoteGenerator {
     let query: String
     
     var searchPublisher: AnyPublisher<[NoteModel], Never> {
-        //TODO: Offload to another thread
         let normalizeQuery = query.lowercased()
         return Just(
             data.filter {

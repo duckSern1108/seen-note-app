@@ -9,5 +9,5 @@ import Foundation
 
 
 public enum ServerDomain: String {
-    case main = ""
+    case aws = "https://rt049stnx9.execute-api.ap-southeast-2.amazonaws.com"
 }

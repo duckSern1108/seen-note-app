@@ -16,7 +16,7 @@ public struct NetworkClient {
         self.session = session
     }
     
-    public func publisher<T: Codable>(router: APIRouter) -> AnyPublisher<T, Error> {
+    public func publisher<T: Codable>(type: T.Type, router: APIRouter) -> AnyPublisher<T, Error> {
         do {
             let urlRequest = try router.urlRequest()
             return session.dataTaskPublisher(for: urlRequest)
@@ -24,7 +24,7 @@ public struct NetworkClient {
                     APIError.serverError(msg: error.localizedDescription, code: error.errorCode)
                 }
                 .tryMap { (data, reponse) -> T in
-                    try JSONDecoder().decode(T.self, from: data)
+                    try JSONDecoder().decode(type, from: data)
                 }
                 .eraseToAnyPublisher()
         }

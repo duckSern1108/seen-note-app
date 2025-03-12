@@ -39,6 +39,12 @@ let package = Package(
             resources: [
                 .process("Resources")
             ]),
+        .testTarget(
+            name: "CoreDataNoteRepositoryTests",
+            dependencies: [
+                .target(name: "CoreDataRepository")
+            ]
+        ),
         .target(
             name: "NoteRepository",
             dependencies: [
@@ -48,7 +54,6 @@ let package = Package(
         .target(
             name: "NoteUseCase",
             dependencies: [
-                .target(name: "Domain"),
                 .target(name: "CoreDataRepository"),
                 .target(name: "NoteRepository")
             ])

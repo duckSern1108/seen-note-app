@@ -19,6 +19,10 @@ public protocol CoreDataNoteRepository {
     func deleteNote(_ data: NoteModel) -> AnyPublisher<Void, Error>
 }
 
+public extension Bundle {
+    static let coreDataRepositoryBundle = Bundle.module
+}
+
 public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked Sendable {
     public static let shared = CoreDataNoteRepositoryDefault()
         
@@ -37,6 +41,10 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
+    }
+    
+    public init(persistentContainer: NSPersistentContainer) {
+        self.persistentContainer = persistentContainer
     }
     
     private var context: NSManagedObjectContext {

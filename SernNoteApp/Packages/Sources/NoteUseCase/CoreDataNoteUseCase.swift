@@ -64,7 +64,10 @@ public class CoreDataNoteUseCaseDefault: CoreDataNoteUseCase {
             .eraseToAnyPublisher()
     }
     
-    public func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, any Error> {
+    public func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error> {
         repository.saveNotes(datas)
+            .flatMap { self.fetchNotes() }
+            .map { _ in }
+            .eraseToAnyPublisher()
     }
 }

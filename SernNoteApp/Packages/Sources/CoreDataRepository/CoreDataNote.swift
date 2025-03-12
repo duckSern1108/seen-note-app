@@ -13,11 +13,11 @@ import Domain
 
 @objc(CoreDataNote)
 class CoreDataNote: NSManagedObject {
-
+    
 }
 
 extension CoreDataNote {
-
+    
     @nonobjc class func fetchRequest() -> NSFetchRequest<CoreDataNote> {
         return NSFetchRequest<CoreDataNote>(entityName: "CoreDataNote")
     }
@@ -32,7 +32,7 @@ extension CoreDataNote {
 }
 
 extension CoreDataNote : Identifiable {
-
+    
 }
 
 extension CoreDataNote {

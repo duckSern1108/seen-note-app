@@ -19,12 +19,15 @@ final class SearchListNoteGeneratorTests: XCTestCase {
         let deletedLocalNote = NoteModel.mock(isDeleteLocal: true)
         let normalNote = NoteModel.mock()
         let generator = SearchListNoteGenerator(data: [normalNote, deletedLocalNote], query: "")
+        let expect = XCTestExpectation()
         generator.searchPublisher
             .sink(receiveValue: { list in
                 XCTAssert(list.count == 1)
                 XCTAssertTrue(list[0] == normalNote)
+                expect.fulfill()
             })
             .store(in: &cancellations)
+        wait(for: [expect])
     }
     
     func test_generate_data_with_deleted_local_note_and_query() {
@@ -33,20 +36,26 @@ final class SearchListNoteGeneratorTests: XCTestCase {
         let resultNote = NoteModel.mock(title: mockQuery)
         let normalNote = NoteModel.mock()
         let generator = SearchListNoteGenerator(data: [normalNote, deletedLocalNote, resultNote], query: mockQuery)
+        let expect = XCTestExpectation()
         generator.searchPublisher
             .sink(receiveValue: { list in
                 XCTAssert(list.count == 1)
                 XCTAssertTrue(list[0] == resultNote)
+                expect.fulfill()
             })
             .store(in: &cancellations)
+        wait(for: [expect])
     }
     
     func test_generate_data_with_empty_query() {
+        let expect = XCTestExpectation()
         let generator = SearchListNoteGenerator(data: [NoteModel.mock(), NoteModel.mock(), NoteModel.mock()], query: "")
         generator.searchPublisher
             .sink(receiveValue: { list in
                 XCTAssert(list.count == 3)
+                expect.fulfill()
             })
             .store(in: &cancellations)
+        wait(for: [expect])
     }
 }

@@ -14,8 +14,8 @@ import Domain
 
 final class NoteListVC: UIViewController {
     
-    typealias DataSource = UITableViewDiffableDataSource<Date, NoteModel>
-    typealias Snapshot = NSDiffableDataSourceSnapshot<Date, NoteModel>
+    typealias DataSource = UITableViewDiffableDataSource<Date, NoteUIModel>
+    typealias Snapshot = NSDiffableDataSourceSnapshot<Date, NoteUIModel>
     
     private lazy var textField = {
         let ret = UITextField()
@@ -109,7 +109,7 @@ final class NoteListVC: UIViewController {
         tableView.delegate = self
         datasource = .init(tableView: tableView, cellProvider: { tableView, indexPath, item in
             let cell: NoteListCell = tableView.dequeueCell(for: indexPath)
-            cell.bindNote(item)
+            cell.bindNote(item.note)
             return cell
         })
         
@@ -182,7 +182,7 @@ final class NoteListVC: UIViewController {
         syncListNotePublisher.send(())
     }
     
-    private func reloadList(data: (sections: [Date], map:[Date: [NoteModel]])) {
+    private func reloadList(data: (sections: [Date], map:[Date: [NoteUIModel]])) {
         var snapshot = Snapshot()
         snapshot.appendSections(data.sections)
         for section in data.sections {
@@ -201,7 +201,7 @@ final class NoteListVC: UIViewController {
 extension NoteListVC: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = datasource.itemIdentifier(for: indexPath) else { return }
-        selectNotePublisher.send(item)
+        selectNotePublisher.send(item.note)
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -233,7 +233,7 @@ extension NoteListVC: UITableViewDelegate {
 extension NoteListVC {
     private func deleteNote(indexPath: IndexPath) {
         guard let item = datasource.itemIdentifier(for: indexPath) else { return }
-        deleteNotePublisher.send(item)
+        deleteNotePublisher.send(item.note)
     }
 }
 
