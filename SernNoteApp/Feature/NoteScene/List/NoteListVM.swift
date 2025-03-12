@@ -89,8 +89,9 @@ final class NoteListVM: BaseViewModel {
             .eraseToAnyPublisher()
         
         //MARK: Delete
-        let deleteLocalPublisher: AnyPublisher<(data: NoteModel, isDeleteSuccess: Bool), Never> = input.deleteNotePublisher
+        let deleteRemoteNotePublisher: AnyPublisher<(data: NoteModel, isDeleteSuccess: Bool), Never> = input.deleteNotePublisher
             .share()
+            .filter { $0.hasRemote }
             .flatMap { note in
                 var note = note
                 note.isDeleteLocal = true
@@ -100,9 +101,18 @@ final class NoteListVM: BaseViewModel {
             }
             .eraseToAnyPublisher()
         
-        let mergeDeleteLocalPublishers: AnyPublisher<Void, Never> = Publishers
+        let deleteLocalNotePublisher: AnyPublisher<Void, Never> = input.deleteNotePublisher
+            .share()
+            .filter { !$0.hasRemote }
+            .flatMap { note in
+                return self.coreDataUseCase.deleteNote(note)
+                    .replaceError(with: ())
+            }
+            .eraseToAnyPublisher()
+        
+        let mergeDeleteRemoteNotePublishers: AnyPublisher<Void, Never> = Publishers
             .Merge(
-                deleteLocalPublisher
+                deleteRemoteNotePublisher
                     .filter { $0.data.hasRemote && $0.isDeleteSuccess }
                     .map { $0.data },
                 syncListNoteGeneratorPublisher
@@ -116,6 +126,11 @@ final class NoteListVM: BaseViewModel {
             .flatMap { note in self.coreDataUseCase.deleteNote(note) }
             .map { _ in }
             .replaceError(with: ())
+            .eraseToAnyPublisher()
+        
+        let deleteNotePublisher: AnyPublisher<Void, Never> = Publishers.Merge(
+            deleteLocalNotePublisher,
+            mergeDeleteRemoteNotePublishers)
             .eraseToAnyPublisher()
         
         //MARK: Add
@@ -173,7 +188,7 @@ final class NoteListVM: BaseViewModel {
             loadPubliser: loadPublisher,
             editNotePublisher: editNotePublisher,
             addNotePublisher: addNotePublisher,
-            deleteNotePublisher: mergeDeleteLocalPublishers)
+            deleteNotePublisher: deleteNotePublisher)
     }
 }
 
