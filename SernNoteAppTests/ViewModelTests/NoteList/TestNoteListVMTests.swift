@@ -44,7 +44,7 @@ final class TestNoteListVMTests: XCTestCase {
         XCTAssertTrue(coreDataUseCase.saveListNoteCalled)
     }
     
-    func test_tranform_add_publisher_to_call_api() throws {
+    func test_transform_add_publisher_to_call_api() throws {
         let addNotePublisher = PassthroughSubject<Void, Never>()
         let output = viewModel.transform(input: .mock(
             addNotePublisher: addNotePublisher.eraseToAnyPublisher()
@@ -56,7 +56,7 @@ final class TestNoteListVMTests: XCTestCase {
         XCTAssertTrue(coreDataUseCase.updateNoteCalled)
     }
     
-    func test_tranform_edit_publisher_to_call_api() throws {
+    func test_transform_edit_publisher_to_call_api() throws {
         let editNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             selectNotePublisher: editNotePublisher.eraseToAnyPublisher()
@@ -67,7 +67,7 @@ final class TestNoteListVMTests: XCTestCase {
         XCTAssertTrue(remoteUseCase.updateNoteCalled)
     }
     
-    func test_tranform_delete_local_note_publisher_to_call_api() throws {
+    func test_transform_delete_local_note_publisher_to_call_api() throws {
         let deleteNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             deleteNotePublisher: deleteNotePublisher.eraseToAnyPublisher()
@@ -78,7 +78,7 @@ final class TestNoteListVMTests: XCTestCase {
         XCTAssertFalse(remoteUseCase.deleteNoteCalled)
     }
     
-    func test_tranform_delete_remote_note_publisher_to_call_api() throws {
+    func test_transform_delete_remote_note_publisher_to_call_api() throws {
         let deleteNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             deleteNotePublisher: deleteNotePublisher.eraseToAnyPublisher()
@@ -92,7 +92,7 @@ final class TestNoteListVMTests: XCTestCase {
         XCTAssertTrue(remoteUseCase.deleteNoteCalled)
     }
     
-    func test_tranform_select_publisher_to_navigate_edit_view() {
+    func test_transform_select_publisher_to_navigate_edit_view() {
         let selectNotePublisher = PassthroughSubject<NoteModel, Never>()
         let output = viewModel.transform(input: .mock(
             selectNotePublisher: selectNotePublisher.eraseToAnyPublisher()
@@ -102,7 +102,7 @@ final class TestNoteListVMTests: XCTestCase {
         XCTAssertTrue(coordinator.didGoToEditNote)
     }
     
-    func test_tranform_add_publisher_to_navigate_add_view() {
+    func test_transform_add_publisher_to_navigate_add_view() {
         let addNotePublisher = PassthroughSubject<Void, Never>()
         let output = viewModel.transform(input: .mock(
             addNotePublisher: addNotePublisher.eraseToAnyPublisher()
@@ -111,18 +111,31 @@ final class TestNoteListVMTests: XCTestCase {
         addNotePublisher.send(())
         XCTAssertTrue(coordinator.didGoToAddNote)
     }
+    
+    func test_transform_search_query_publisher_to_list_note_change() {
+        let searchQueryPublisher = PassthroughSubject<String, Never>()
+        let output = viewModel.transform(input: .mock(searchQueryPublisher: searchQueryPublisher.eraseToAnyPublisher()))
+        var isListNotePublisherSend = false
+        output.listNotePubliser
+            .sink { _ in
+                isListNotePublisherSend = true
+            }
+            .store(in: &cancellations)
+        searchQueryPublisher.send("")
+        XCTAssertTrue(isListNotePublisherSend)
+    }
 }
 
 extension NoteListVM.Input {
     static func mock(
-        searchQuery: AnyPublisher<String, Never> = Just("").eraseToAnyPublisher(),
+        searchQueryPublisher: AnyPublisher<String, Never> = Just("").eraseToAnyPublisher(),
         syncListNotePublisher: AnyPublisher<Void, Never> = Just(()).eraseToAnyPublisher(),
         addNotePublisher: AnyPublisher<Void, Never> = Just(()).eraseToAnyPublisher(),
         selectNotePublisher: AnyPublisher<NoteModel, Never> = Just(.init()).eraseToAnyPublisher(),
         deleteNotePublisher: AnyPublisher<NoteModel, Never> = Just(.init()).eraseToAnyPublisher()
     ) -> Self {
         .init(
-            searchQuery: searchQuery,
+            searchQueryPublisher: searchQueryPublisher,
             syncListNotePublisher: syncListNotePublisher,
             addNotePublisher: addNotePublisher,
             selectNotePublisher: selectNotePublisher,

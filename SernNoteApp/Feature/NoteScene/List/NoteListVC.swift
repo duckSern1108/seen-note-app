@@ -148,7 +148,7 @@ final class NoteListVC: UIViewController {
     private func bindViewModel() {
         let output = viewModel.transform(
             input: .init(
-                searchQuery: textField.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
+                searchQueryPublisher: textField.textPublisher.map { $0 ?? "" }.eraseToAnyPublisher(),
                 syncListNotePublisher: syncListNotePublisher.eraseToAnyPublisher(),
                 addNotePublisher: addNotePublisher.eraseToAnyPublisher(),
                 selectNotePublisher: selectNotePublisher.eraseToAnyPublisher(),

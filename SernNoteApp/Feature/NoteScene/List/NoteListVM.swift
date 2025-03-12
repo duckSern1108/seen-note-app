@@ -14,7 +14,7 @@ import NoteUseCase
 final class NoteListVM: BaseViewModel {
     
     struct Input {
-        var searchQuery: AnyPublisher<String, Never>
+        var searchQueryPublisher: AnyPublisher<String, Never>
         var syncListNotePublisher: AnyPublisher<Void, Never>
         var addNotePublisher: AnyPublisher<Void, Never>
         var selectNotePublisher: AnyPublisher<NoteModel, Never>
@@ -171,7 +171,7 @@ final class NoteListVM: BaseViewModel {
         let listNotePubliser: AnyPublisher<[NoteModel], Never> = Publishers
             .CombineLatest(
                 localData.removeDuplicates(),
-                input.searchQuery
+                input.searchQueryPublisher
             )
             .flatMap { (list, query) in
                 SearchListNoteGenerator(data: list, query: query).searchPublisher
