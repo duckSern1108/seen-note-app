@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 extension Date {
     var day: Int {
         var calendar = Calendar.current

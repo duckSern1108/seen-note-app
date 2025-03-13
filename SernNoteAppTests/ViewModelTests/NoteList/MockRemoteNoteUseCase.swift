@@ -10,8 +10,7 @@ import Combine
 import Domain
 import NoteUseCase
 
-
-class MockRemoteNoteUseCase: NoteUseCase {
+final class MockRemoteNoteUseCase: NoteUseCase {
     private(set) var addNoteCalled = false
     private(set) var updateNoteCalled = false
     private(set) var deleteNoteCalled = false

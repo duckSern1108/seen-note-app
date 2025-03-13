@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  NetworkClient.swift
 //  Packages
 //
 //  Created by sonnd on 11/3/25.
@@ -8,9 +8,8 @@
 import Foundation
 import Combine
 
-
 public struct NetworkClient {
-    var session: URLSession
+    private let session: URLSession
     
     public init(session: URLSession) {
         self.session = session

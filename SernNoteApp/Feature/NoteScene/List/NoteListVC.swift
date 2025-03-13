@@ -11,7 +11,6 @@ import CombineCocoa
 import SnapKit
 import Domain
 
-
 final class NoteListVC: UIViewController {
     
     typealias DataSource = UITableViewDiffableDataSource<Date, NoteUIModel>
@@ -196,6 +195,11 @@ final class NoteListVC: UIViewController {
     @objc private func onAdd() {
         addNotePublisher.send(())
     }
+    
+    private func deleteNote(indexPath: IndexPath) {
+        guard let item = datasource.itemIdentifier(for: indexPath) else { return }
+        deleteNotePublisher.send(item.note)
+    }
 }
 
 extension NoteListVC: UITableViewDelegate {
@@ -229,12 +233,3 @@ extension NoteListVC: UITableViewDelegate {
         NoteListHeaderView.HEIGHT
     }
 }
-
-extension NoteListVC {
-    private func deleteNote(indexPath: IndexPath) {
-        guard let item = datasource.itemIdentifier(for: indexPath) else { return }
-        deleteNotePublisher.send(item.note)
-    }
-}
-
-

@@ -10,9 +10,7 @@ import Combine
 import Domain
 import NoteUseCase
 
-
-
-class MockCoreDataUseCase: CoreDataNoteUseCase {
+final class MockCoreDataUseCase: CoreDataNoteUseCase {
     private(set) var addNoteCalled = false
     private(set) var updateNoteCalled = false
     private(set) var deleteNoteCalled = false

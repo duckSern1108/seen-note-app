@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 extension UIView {
     var cornerRadius: CGFloat {
         get { layer.cornerRadius }

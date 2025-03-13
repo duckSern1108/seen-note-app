@@ -3,8 +3,6 @@ import Combine
 import Domain
 import BaseNetwork
 
-
-
 public protocol NoteRepository {
     func addNote(_ data: NoteModel) -> AnyPublisher<NoteModel, Error>
     func updateNote(_ data: NoteModel) -> AnyPublisher<NoteModel, Error>
@@ -12,8 +10,7 @@ public protocol NoteRepository {
     func getListNote() -> AnyPublisher<[NoteModel], Error>
 }
 
-
-public class NoteRepositoryDefault: NoteRepository {
+public final class NoteRepositoryDefault: NoteRepository {
     
     private let client: NetworkClient
     

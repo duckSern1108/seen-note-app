@@ -11,7 +11,6 @@ import Combine
 import Domain
 import CoreDataRepository
 
-
 final class CoreDataNoteRepositoryTests: XCTestCase {
     
     private var repository: CoreDataNoteRepositoryDefault!

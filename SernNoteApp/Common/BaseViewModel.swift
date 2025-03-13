@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-
 protocol BaseViewModel {
     associatedtype Input
     associatedtype Output

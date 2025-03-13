@@ -10,8 +10,7 @@ import SnapKit
 import Combine
 import CombineCocoa
 
-
-class FloatingInputView: WithoutNibView {
+final class FloatingInputView: WithoutNibView {
     
     struct UIConfig {
         var title: String = ""

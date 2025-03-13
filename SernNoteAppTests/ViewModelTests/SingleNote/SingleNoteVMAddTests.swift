@@ -10,7 +10,6 @@ import Combine
 import Domain
 @testable import SernNoteApp
 
-
 final class SingleNoteVMAddTests: XCTestCase {
 
     private var viewModel: SingleNoteVM!

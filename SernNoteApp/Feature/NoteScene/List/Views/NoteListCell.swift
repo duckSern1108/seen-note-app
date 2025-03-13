@@ -9,7 +9,6 @@ import UIKit
 import SnapKit
 import Domain
 
-
 final class NoteListCell: UITableViewCell {
     
     /*

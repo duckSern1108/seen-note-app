@@ -9,7 +9,6 @@ import Foundation
 import Combine
 import Domain
 
-
 struct SyncListNoteModel {
     var updatedLocalList: [NoteModel]
     
@@ -18,52 +17,50 @@ struct SyncListNoteModel {
     var needDeleteRemote: [NoteModel]
 }
 
-//TODO: Unit test
 struct SyncListNoteDataGenerator {
     let localData: [NoteModel]
     let remoteData: [NoteModel]
     
     var mergePublisher: AnyPublisher<SyncListNoteModel, Never> {
-        let localCreateDateSet: Set<Date> = Set(localData.map { $0.created })
-        let remoteCreateDateSet: Set<Date> = Set(remoteData.map { $0.created })
-        let unionCreateDateSet = localCreateDateSet.union(remoteCreateDateSet)
+        let localIdSet: Set<Int> = Set(localData.map { $0.id })
+        let remoteIdSet: Set<Int> = Set(remoteData.map { $0.id })
+        let unionIdSet = localIdSet.union(remoteIdSet)
         
-        let localMap = localData.mapCreateDateToElement
-        let remoteMap = remoteData.mapCreateDateToElement
+        let localMap = localData.mapIdToElement
+        let remoteMap = remoteData.mapIdToElement
         
         var needAddRemote: [NoteModel] = []
         var needUpdateRemote: [NoteModel] = []
         var needDeleteRemote: [NoteModel] = []
-        
-        
-        let updatedLocalList: [NoteModel] = unionCreateDateSet.map { date in
-            let hasRemote = remoteMap[date] != nil
-            let hasLocal = localMap[date] != nil
+                
+        let updatedLocalList: [NoteModel] = unionIdSet.map { id in
+            let hasRemote = remoteMap[id] != nil
+            let hasLocal = localMap[id] != nil
             switch true {
             case hasRemote && hasLocal:
                 var ret: NoteModel
-                let isRemoteNewest = remoteMap[date]!.lastUpdated > localMap[date]!.lastUpdated
+                let isRemoteNewest = remoteMap[id]!.lastUpdated >= localMap[id]!.lastUpdated
                 if isRemoteNewest {
-                    ret = remoteMap[date]!
+                    ret = remoteMap[id]!
                 } else {
-                    ret = localMap[date]!
+                    ret = localMap[id]!
                 }
                 ret.hasRemote = true
-                if localMap[date]!.isDeleteLocal {
-                    needDeleteRemote.append(ret)
+                if localMap[id]!.isDeleteLocal {
+                    needDeleteRemote.append(remoteMap[id]!)
                 } else if !isRemoteNewest {
                     needUpdateRemote.append(ret)
                 }
-                ret.isDeleteLocal = localMap[date]!.isDeleteLocal
+                ret.isDeleteLocal = localMap[id]!.isDeleteLocal
                 return ret
                 
             case hasRemote:
-                var ret = remoteMap[date]!
+                var ret = remoteMap[id]!
                 ret.hasRemote = true
                 return ret
                 
             case hasLocal:
-                let localData = localMap[date]!
+                let localData = localMap[id]!
                 if !localData.hasRemote {
                     needAddRemote.append(localData)
                 }
@@ -82,10 +79,10 @@ struct SyncListNoteDataGenerator {
 }
 
 private extension Array where Element == NoteModel {
-    var mapCreateDateToElement: Dictionary<Date, NoteModel> {
+    var mapIdToElement: Dictionary<Int, NoteModel> {
         self.reduce([:]) { partialResult, element in
             var partialResult = partialResult
-            partialResult[element.created] = element
+            partialResult[element.id] = element
             return partialResult
         }
     }

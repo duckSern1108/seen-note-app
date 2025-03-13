@@ -1,5 +1,5 @@
 //
-//  ListNote.swift
+//  NoteListVM.swift
 //  SernNoteApp
 //
 //  Created by sonnd on 7/3/25.
@@ -10,24 +10,23 @@ import Combine
 import Domain
 import NoteUseCase
 
-
 final class NoteListVM: BaseViewModel {
     
     struct Input {
-        var searchQueryPublisher: AnyPublisher<String, Never>
-        var syncListNotePublisher: AnyPublisher<Void, Never>
-        var addNotePublisher: AnyPublisher<Void, Never>
-        var selectNotePublisher: AnyPublisher<NoteModel, Never>
-        var deleteNotePublisher: AnyPublisher<NoteModel, Never>
+        let searchQueryPublisher: AnyPublisher<String, Never>
+        let syncListNotePublisher: AnyPublisher<Void, Never>
+        let addNotePublisher: AnyPublisher<Void, Never>
+        let selectNotePublisher: AnyPublisher<NoteModel, Never>
+        let deleteNotePublisher: AnyPublisher<NoteModel, Never>
     }
     
     struct Output {
-        var listNotePubliser: AnyPublisher<[NoteModel], Never>
+        let listNotePubliser: AnyPublisher<[NoteModel], Never>
         
-        var loadPubliser: AnyPublisher<Void, Never>
-        var editNotePublisher: AnyPublisher<Void, Never>
-        var addNotePublisher: AnyPublisher<Void, Never>
-        var deleteNotePublisher: AnyPublisher<Void, Never>
+        let loadPubliser: AnyPublisher<Void, Never>
+        let editNotePublisher: AnyPublisher<Void, Never>
+        let addNotePublisher: AnyPublisher<Void, Never>
+        let deleteNotePublisher: AnyPublisher<Void, Never>
     }
     
     let coreDataUseCase: CoreDataNoteUseCase
@@ -189,15 +188,5 @@ final class NoteListVM: BaseViewModel {
             editNotePublisher: editNotePublisher,
             addNotePublisher: addNotePublisher,
             deleteNotePublisher: deleteNotePublisher)
-    }
-}
-
-extension NoteListVM {
-    func bindSyncDataAction(input: Input, cancellations: inout Set<AnyCancellable>) {
-        
-    }
-    
-    func bindSelectAction(input: Input, cancellations: inout Set<AnyCancellable>) {
-        
     }
 }

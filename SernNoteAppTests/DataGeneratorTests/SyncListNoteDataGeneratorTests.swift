@@ -10,7 +10,6 @@ import Combine
 import Domain
 @testable import SernNoteApp
 
-
 final class SyncListNoteDataGeneratorTests: XCTestCase {
     
     private var cancellations = Set<AnyCancellable>()

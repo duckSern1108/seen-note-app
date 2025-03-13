@@ -11,7 +11,6 @@ import NoteUseCase
 import CoreDataRepository
 import NoteRepository
 
-
 struct NoteSceneBuilder {
     static func buildListScreen() -> UIViewController {
         let coordinator = NoteListCoordinatorDefault()

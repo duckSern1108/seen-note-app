@@ -10,8 +10,7 @@ import Combine
 import Domain
 @testable import SernNoteApp
 
-
-class MockNoteListCoordinator: NoteListCoordinator {
+final class MockNoteListCoordinator: NoteListCoordinator {
     weak var navigationController: UINavigationController?
     
     private(set) var didGoToAddNote = false

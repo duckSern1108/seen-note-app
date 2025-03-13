@@ -11,7 +11,6 @@ import Combine
 import NoteUseCase
 import Domain
 
-
 final class TestNoteListVMTests: XCTestCase {
     
     private var viewModel: NoteListVM!

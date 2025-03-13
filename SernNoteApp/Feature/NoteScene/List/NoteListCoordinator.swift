@@ -9,7 +9,6 @@ import UIKit
 import Combine
 import Domain
 
-
 protocol NoteListCoordinator {
     var navigationController: UINavigationController? { get set }
     
@@ -17,7 +16,7 @@ protocol NoteListCoordinator {
     func goToAddNote() -> AnyPublisher<NoteModel, Never>
 }
 
-class NoteListCoordinatorDefault: NoteListCoordinator {
+final class NoteListCoordinatorDefault: NoteListCoordinator {
     weak var navigationController: UINavigationController?
     
     func goToEditNote(note: NoteModel) -> AnyPublisher<NoteModel, Never> {

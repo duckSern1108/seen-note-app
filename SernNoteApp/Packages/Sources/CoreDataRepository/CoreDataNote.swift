@@ -1,20 +1,9 @@
-//
-//  CoreDataNote+CoreDataProperties.swift
-//  SernNoteApp
-//
-//  Created by sonnd on 8/3/25.
-//
-//
-
 import Foundation
 import CoreData
 import Domain
 
-
 @objc(CoreDataNote)
-class CoreDataNote: NSManagedObject {
-    
-}
+class CoreDataNote: NSManagedObject {}
 
 extension CoreDataNote {
     
@@ -29,12 +18,9 @@ extension CoreDataNote {
     @NSManaged var isDeleteLocal: Bool
     @NSManaged var lastUpdated: Date
     @NSManaged var title: String
-
 }
 
-extension CoreDataNote : Identifiable {
-    
-}
+extension CoreDataNote : Identifiable {}
 
 extension CoreDataNote {
     var noteModel: NoteModel {

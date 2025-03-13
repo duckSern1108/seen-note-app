@@ -8,9 +8,11 @@
 import UIKit
 import SnapKit
 
-
 final class NoteListHeaderView: UITableViewHeaderFooterView {
-    // label's height = 24, vertical padding = 8
+    /* label's height = 24,
+     vertical padding = 8
+     24 + 8 * 2
+     */
     static let HEIGHT: CGFloat = 40
     private let label = UILabel()
     

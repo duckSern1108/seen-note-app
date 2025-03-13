@@ -8,7 +8,6 @@
 import Foundation
 import Domain
 
-
 extension NoteModel {
     static func mock(hasRemote: Bool = false,
                 isDeleteLocal: Bool = false,

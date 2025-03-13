@@ -1,17 +1,9 @@
-//
-//  RemoteManageNoteUseCase.swift
-//  SernNoteApp
-//
-//  Created by sonnd on 7/3/25.
-//
-
 import Foundation
 import Combine
 import Domain
 import NoteRepository
 
-
-public class RemoteNoteUseCase: NoteUseCase {
+public final class RemoteNoteUseCase: NoteUseCase {
     
     private let repository: NoteRepository
     
@@ -35,4 +27,3 @@ public class RemoteNoteUseCase: NoteUseCase {
         repository.getListNote()
     }
 }
-

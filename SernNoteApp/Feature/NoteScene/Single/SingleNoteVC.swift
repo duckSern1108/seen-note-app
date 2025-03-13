@@ -11,8 +11,7 @@ import CombineCocoa
 import SnapKit
 import Domain
 
-
-class SingleNoteVC: UIViewController {
+final class SingleNoteVC: UIViewController {
     
     static func newVC(viewModel: SingleNoteVM) -> SingleNoteVC {
         let vc = SingleNoteVC()
@@ -36,8 +35,7 @@ class SingleNoteVC: UIViewController {
     private var viewModel: SingleNoteVM!
     private var cancellations = Set<AnyCancellable>()
     
-    private let _backPublisher = PassthroughSubject<Void, Never>()
-    private var backPublisher: AnyPublisher<Void, Never> { _backPublisher.eraseToAnyPublisher() }
+    private let backPublisher = PassthroughSubject<Void, Never>()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -116,7 +114,7 @@ class SingleNoteVC: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        _backPublisher.send(())
+        backPublisher.send(())
     }
     
 }

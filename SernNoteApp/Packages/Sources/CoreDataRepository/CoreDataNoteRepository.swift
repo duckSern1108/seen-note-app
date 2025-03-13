@@ -1,15 +1,7 @@
-//
-//  CoreDataManageNoteUseCase.swift
-//  SernNoteApp
-//
-//  Created by sonnd on 7/3/25.
-//
-
 import UIKit
 import Combine
 @preconcurrency import CoreData
 import Domain
-
 
 public protocol CoreDataNoteRepository {
     func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error>
@@ -23,7 +15,7 @@ public extension Bundle {
     static let coreDataRepositoryBundle = Bundle.module
 }
 
-public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked Sendable {
+public final class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked Sendable {
     public static let shared = CoreDataNoteRepositoryDefault()
         
     private let persistentContainer: NSPersistentContainer

@@ -1,15 +1,6 @@
-//
-//  NoteService.swift
-//  SernNoteApp
-//
-//  Created by sonnd on 7/3/25.
-//
-
 import Foundation
-import Combine
 import Domain
 import BaseNetwork
-
 
 public enum NoteRouter: APIRouter {
     

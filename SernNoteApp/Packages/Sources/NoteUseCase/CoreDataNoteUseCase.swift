@@ -1,16 +1,8 @@
-//
-//  CoreDataManageNoteUseCase.swift
-//  SernNoteApp
-//
-//  Created by sonnd on 7/3/25.
-//
-
 import UIKit
 import Combine
 import CoreData
 import Domain
 import CoreDataRepository
-
 
 public protocol CoreDataNoteUseCase {
     var notes: AnyPublisher<[NoteModel], Never> { get }
@@ -22,7 +14,7 @@ public protocol CoreDataNoteUseCase {
     func saveNotes(_ datas: [NoteModel]) -> AnyPublisher<Void, Error>
 }
 
-public class CoreDataNoteUseCaseDefault: CoreDataNoteUseCase {
+public final class CoreDataNoteUseCaseDefault: CoreDataNoteUseCase {
     private let _notes = CurrentValueSubject<[NoteModel], Never>([])
     
     public var notes: AnyPublisher<[NoteModel], Never> { _notes.eraseToAnyPublisher() }

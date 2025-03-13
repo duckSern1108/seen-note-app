@@ -1,12 +1,4 @@
-//
-//  NoteModel.swift
-//  SernNoteApp
-//
-//  Created by sonnd on 7/3/25.
-//
-
 import Foundation
-
 
 public struct NoteModel: Hashable, Sendable {
     public var hasRemote: Bool = false

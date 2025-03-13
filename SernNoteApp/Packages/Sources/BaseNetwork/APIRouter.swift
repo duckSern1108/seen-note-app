@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-
 public protocol APIRouter {
     func path() -> String
     func method() -> HTTPMethod
@@ -17,36 +16,17 @@ public protocol APIRouter {
     func headers() -> [String: String]
 }
 
-public extension APIRouter {
-    func headers() -> [String: String] {
-        [:]
-    }
-}
-
-extension APIRouter {
-    func urlRequest() throws -> URLRequest {
-        guard let url = URL(string: domain().rawValue + path()) else {
-            throw APIError.routerNotValid
-        }
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let param = params()
-        //TODO: Get query param
-        if !param.isEmpty {
-            request.httpBody = try JSONSerialization.data(withJSONObject: params())
-        }
-        
-        request.httpMethod = method().rawValue
-        request.allHTTPHeaderFields = headers()
-        return request
-    }
-}
-
 public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
     case put = "PUT"
     case delete = "DELETE"
+}
+
+public extension APIRouter {
+    func headers() -> [String: String] {
+        [:]
+    }
 }
 
 public enum APIError: LocalizedError {
@@ -63,5 +43,23 @@ public enum APIError: LocalizedError {
         case .serverError(let msg, _):
             return msg
         }
+    }
+}
+
+extension APIRouter {
+    func urlRequest() throws -> URLRequest {
+        guard let url = URL(string: domain().rawValue + path()) else {
+            throw APIError.routerNotValid
+        }
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let param = params()
+        if !param.isEmpty {
+            request.httpBody = try JSONSerialization.data(withJSONObject: params())
+        }
+        
+        request.httpMethod = method().rawValue
+        request.allHTTPHeaderFields = headers()
+        return request
     }
 }

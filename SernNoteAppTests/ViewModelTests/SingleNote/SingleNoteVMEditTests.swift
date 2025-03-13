@@ -6,14 +6,10 @@
 //
 
 import Foundation
-
-
 import XCTest
 import Combine
 import Domain
 @testable import SernNoteApp
-
-
 
 final class SingleNoteVMEditTests: XCTestCase {
 

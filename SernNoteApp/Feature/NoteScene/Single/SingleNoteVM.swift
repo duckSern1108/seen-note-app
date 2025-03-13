@@ -9,18 +9,17 @@ import Foundation
 import Combine
 import Domain
 
-
-class SingleNoteVM: BaseViewModel {
+final class SingleNoteVM: BaseViewModel {
     
     struct Input {
-        var titlePublisher: AnyPublisher<String, Never>
-        var contentPublisher: AnyPublisher<String, Never>
-        var backPublisher: AnyPublisher<Void, Never>
+        let titlePublisher: AnyPublisher<String, Never>
+        let contentPublisher: AnyPublisher<String, Never>
+        let backPublisher: AnyPublisher<Void, Never>
     }
     
     struct Output {
-        var notePublisher: AnyPublisher<NoteModel, Never>
-        var backPublisher: AnyPublisher<Void, Never>
+        let notePublisher: AnyPublisher<NoteModel, Never>
+        let backPublisher: AnyPublisher<Void, Never>
     }
     
     @Published private var title: String = ""
@@ -31,8 +30,6 @@ class SingleNoteVM: BaseViewModel {
     var delegate: AnyPublisher<NoteModel, Never> {
         _delegate.eraseToAnyPublisher()
     }
-    
-    private var cancellations = Set<AnyCancellable>()
     
     init(note: NoteModel) {
         self.note = note
