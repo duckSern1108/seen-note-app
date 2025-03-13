@@ -72,7 +72,7 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
         return Future<Void, Error>() { promise in
             context.perform {
                 let request = CoreDataNote.fetchRequest()
-                request.predicate = NSPredicate(format: "created = %@", data.created as NSDate)
+                request.predicate = NSPredicate(format: "id = %@", data.id as NSNumber)
                 request.returnsObjectsAsFaults = false
                 do {
                     let listObject = try context.fetch(request)
@@ -95,7 +95,7 @@ public class CoreDataNoteRepositoryDefault: CoreDataNoteRepository, @unchecked S
         return Future<Void, Error>() { promise in
             context.perform {
                 let request = CoreDataNote.fetchRequest()
-                request.predicate = NSPredicate(format: "created = %@", data.created as NSDate)
+                request.predicate = NSPredicate(format: "id = %@", data.id as NSNumber)
                 request.returnsObjectsAsFaults = false
                 do {
                     let listObject = try context.fetch(request)

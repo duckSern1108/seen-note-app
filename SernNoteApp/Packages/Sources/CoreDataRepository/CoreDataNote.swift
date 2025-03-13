@@ -21,7 +21,8 @@ extension CoreDataNote {
     @nonobjc class func fetchRequest() -> NSFetchRequest<CoreDataNote> {
         return NSFetchRequest<CoreDataNote>(entityName: "CoreDataNote")
     }
-
+    
+    @NSManaged var id: Int
     @NSManaged var content: String
     @NSManaged var created: Date
     @NSManaged var hasRemote: Bool
@@ -46,6 +47,7 @@ extension CoreDataNote {
     }
     
     func updateFromNote(_ data: NoteModel) {
+        id = data.id
         title = data.title
         content = data.content
         created = data.created
